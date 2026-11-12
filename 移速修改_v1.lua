@@ -1,5 +1,7 @@
 -- 移速修改 v1  |  UI 由 XJWUI v1 提供
--- XJWUI 加载器（黑曜石 / WindUI 同款加载形态：一个网址就是整套 UI）
+-- 界面（窗口 / 图标 / 背景立绘 / 设置页 / 主题配置）全部来自 XJWUI_v1.lua，
+-- 本文件只负责功能逻辑，改功能不用重新发库。
+
 local XJWUI_REPO = "jiuyijiuyijiuyi91/UIKu"
 local XJWUI_BRANCH = "main"
 
@@ -44,24 +46,118 @@ end
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UIS = game:GetService("UserInputService")
+local HttpService = game:GetService("HttpService")
 local LocalPlayer = Players.LocalPlayer
 
+local REPO = "https://raw.githubusercontent.com/" .. XJWUI_REPO .. "/" .. XJWUI_BRANCH .. "/"
+local DIR = "Revenant"
+local DIR_LIB = DIR .. "/obsidian"
+local DIR_ASSETS = DIR .. "/assets"
+
 local Library = XJWUI
+local REV_I18N = Library.I18N
 local ThemeManager = Library.ThemeManager
 local SaveManager = Library.SaveManager
 
-Library:InstallNotify("移速修改")
-Library:EnableChinese(true)
+if type(REV_I18N) == "table" and type(REV_I18N.SetEnabled) == "function" then
+	REV_I18N:SetEnabled(true)
+end
+
+local BACKGROUND_IMAGE = "https://raw.githubusercontent.com/jiuyijiuyijiuyi91/XJW666/refs/heads/main/XJW%E8%84%9A%E6%9C%AC%E5%A3%81%E7%BA%B8.png"
+
+local function buildIcon()
+	local ok, path = pcall(function()
+		if not isfolder(DIR_ASSETS) then
+			makefolder(DIR_ASSETS)
+		end
+
+		local file = DIR_ASSETS .. "/exponential.png"
+		local okDown = pcall(function()
+			writefile(file, game:HttpGet("https://gitlab.com/aristooey/Revenant/-/raw/main/exponential.png"))
+		end)
+
+		if not okDown then return nil end
+		if not isfile(file) then return nil end
+
+		local asset = getcustomasset(file)
+		if type(asset) == "string" and asset ~= "" then
+			return asset
+		end
+		return nil
+	end)
+
+	if ok and path then return path end
+	return "ghost"
+end
 
 local Window = Library:CreateWindow({
 	Title = "XJW中心",
 	Footer = "感谢支持",
-	SidebarWidth = 176,
-	TabTextOffset = 38,
-	TabTextSize = 15,
+	Icon = nil,
+	CornerRadius = 10,
+
+	SidebarCompacted = false,
+	EnableCompacting = false,
+	MinSidebarWidth = 168,
+	NotifySide = "Right",
+	ShowCustomCursor = false,
+	Resizable = true,
+	Center = true,
+	AutoShow = true,
+	Animations = {
+		ToggleWindow = false,
+		TabSwitch = true,
+		Groupbox = true,
+		Dropdown = true,
+		KeyPicker = true,
+	},
 })
 
-local BACKGROUND_IMAGE = "https://raw.githubusercontent.com/jiuyijiuyijiuyi91/XJW666/refs/heads/main/XJW%E8%84%9A%E6%9C%AC%E5%A3%81%E7%BA%B8.png"
+Library.ShowCustomCursor = false
+if type(Library.Animations) == "table" then
+	Library.Animations.ToggleWindow = false
+end
+
+task.delay(0.6, function()
+	if type(Library.Toggles) ~= "table" then return end
+	for _, t in pairs(Library.Toggles) do
+		if type(t) == "table" and type(t.Display) == "function" then
+			pcall(function() t:Display() end)
+		end
+	end
+end)
+
+local function revTrText(s)
+	if REV_I18N and REV_I18N.Enable and type(REV_I18N.Translate) == "function" then
+		return REV_I18N.Translate(s) or s
+	end
+	return s
+end
+
+local rawNotify = Library.Notify
+Library.Notify = function(a, b)
+	if Library.Unloaded then return end
+
+	if type(b) == "table" then
+		local title = tostring(b.Title or "")
+		if title == "" then title = "移速修改" end
+		return rawNotify(a, {
+			Title = revTrText(title),
+			Description = revTrText(tostring(b.Content or b.Description or "")),
+			Time = b.Time or b.Duration or 4,
+			SoundId = 106145041472451,
+			Volume = 1,
+		})
+	end
+
+	return rawNotify(a, {
+		Title = "移速修改",
+		Description = revTrText(tostring(b or "")),
+		Time = 4,
+		SoundId = 106145041472451,
+		Volume = 1,
+	})
+end
 
 local BACKGROUND_SCALE_MODE = Enum.ScaleType.Crop
 
@@ -288,6 +384,44 @@ local Tabs = {
 	Misc = Window:AddTab("杂项", "ellipsis", "杂项功能"),
 	Settings = Window:AddTab("界面设置", "settings", "更换界面主题与保存配置！"),
 }
+
+do
+	local SIDEBAR_WIDTH = 176
+	local TEXT_OFFSET = 38
+	local TEXT_SIZE = 15
+
+	local function styleTabButtons()
+		if type(Library.TabButtons) ~= "table" then return end
+		for _, btn in ipairs(Library.TabButtons) do
+			if type(btn) == "table" then
+				local label = btn.Label
+				if label then
+					label.Visible = true
+					label.TextXAlignment = Enum.TextXAlignment.Left
+					label.TextSize = TEXT_SIZE
+					label.TextTransparency = 0.3
+					label.Position = UDim2.fromOffset(TEXT_OFFSET, 0)
+					label.Size = UDim2.new(1, -TEXT_OFFSET, 1, 0)
+					label:SetAttribute("MarvisTabLabel", true)
+				end
+				if btn.Padding then
+					btn.Padding.PaddingLeft = UDim.new(0, 12)
+					btn.Padding.PaddingRight = UDim.new(0, 12)
+				end
+			end
+		end
+	end
+
+	if type(Window.SetSidebarWidth) == "function" then
+		pcall(function() Window:SetSidebarWidth(SIDEBAR_WIDTH) end)
+	end
+
+	styleTabButtons()
+	task.defer(styleTabButtons)
+	task.delay(0.5, styleTabButtons)
+	task.delay(1.5, styleTabButtons)
+end
+
 local HomeLeft = Tabs.Home:AddLeftGroupbox("概览", "sparkles")
 local HomeRight = Tabs.Home:AddRightGroupbox("快捷操作", "star")
 
@@ -666,8 +800,9 @@ end
 
 Tabs.Settings:AddLeftGroupbox("信息", "settings"):AddLabel("基于TSB无延迟UI 改造")
 
-XJWUI:StyleSidebar()
-
+task.defer(function()
+	REV_I18N:SetEnabled(true)
+end)
 
 task.defer(function()
 	local ok = pcall(function()
