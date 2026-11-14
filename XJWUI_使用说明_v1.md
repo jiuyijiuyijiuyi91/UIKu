@@ -2,102 +2,97 @@
 AIGC:
     Label: "1"
     ContentProducer: 001191440300708461136T1XGW3
-    ProduceID: 4dd97f6f7e89a386dd5d6289ccc2c985_9b3c51e7debe11f1997d52540024e231
-    ReservedCode1: Uj60egshADUUqOm8WVG8hbRZXqkKJK6O39JSRHqP3e2zjRPvHwudv9twBsl2AZupj4DaYPJl99/yyuTdc7E13ZZ2eDccWxb4qnp4msd9uWHpecNQTj0bxl817UtEIo3VAk3UkdpKz34gfmMVUdp7lVScknCm9aVRzmcKd3kbqZ6hZTDVE2rjBbQXzpw=
+    ProduceID: 4dd97f6f7e89a386dd5d6289ccc2c985_951f8a7de01611f19919525400638852
+    ReservedCode1: OYVXjdly5ldCMWM4MddmyUO/cKl+n+6dECcF/IlMM7mZSJdVhU2eezc09E9l57D7WUAtI7ky22TduOT/E8OvbJu8wlqjJ8SvuZMgO7mD6rqM2PY/mx0UTAMi3Am34FdHFZy7WtgMhtJKDejZt6uiJE9kxuokyQlQxAy4ciHyP7rHEMcxSuycY5ohH/U=
     ContentPropagator: 001191440300708461136T1XGW3
-    PropagateID: 4dd97f6f7e89a386dd5d6289ccc2c985_9b3c51e7debe11f1997d52540024e231
-    ReservedCode2: Uj60egshADUUqOm8WVG8hbRZXqkKJK6O39JSRHqP3e2zjRPvHwudv9twBsl2AZupj4DaYPJl99/yyuTdc7E13ZZ2eDccWxb4qnp4msd9uWHpecNQTj0bxl817UtEIo3VAk3UkdpKz34gfmMVUdp7lVScknCm9aVRzmcKd3kbqZ6hZTDVE2rjBbQXzpw=
+    PropagateID: 4dd97f6f7e89a386dd5d6289ccc2c985_951f8a7de01611f19919525400638852
+    ReservedCode2: OYVXjdly5ldCMWM4MddmyUO/cKl+n+6dECcF/IlMM7mZSJdVhU2eezc09E9l57D7WUAtI7ky22TduOT/E8OvbJu8wlqjJ8SvuZMgO7mD6rqM2PY/mx0UTAMi3Am34FdHFZy7WtgMhtJKDejZt6uiJE9kxuokyQlQxAy4ciHyP7rHEMcxSuycY5ohH/U=
 ---
 
 
 
+# XJWUI v1 使用说明（启动流程 / 开关方式 / 设置页全量内置）
 
+本轮改造目标：**加载动画、开关方式三选一、UI 设置页汉化与全部功能，全部由库本体提供**，业务脚本里不再保留任何一份实现。
 
-# XJWUI v1 使用说明
+仓库文件：`XJWUI_v1.lua`，内部 `Version = "v1"`。
 
-## 一句话
+## 一、和以前最大的区别
 
-`XJWUI_v1.lua` 是**自包含 UI 库**：内核 Library + ThemeManager + SaveManager 全部内嵌在同一个文件里。
-加载这一个网址，拿到的就是完整窗口 UI（与 WindUI / 黑曜石 `loadstring(game:HttpGet(...))()` 的用法一致）。
+| 项目 | 旧版（脚本内实现） | v1 现在 |
+|---|---|---|
+| 加载动画 | 脚本里自己写 CreateLoading + 阶段文案 | `Library:Boot()` 一行调用，库内六阶段 |
+| 开关方式三选一 | 脚本里手搓 pickerGui / BOOT 状态机 | 同上，库内面板，配色跟随主题 |
+| 选择期隐藏浮窗 | 脚本自己 hideFloats + 打补丁 | 库内 `BootHiding` 开关，`SetFloatStyle` 自动让路 |
+| 设置页汉化 | 脚本内挂 REV_I18N 词典 | 库内 `EnableChinese(true)`，Boot 默认开启 |
+| 悬浮窗样式 / 配色 / 背景图 / 保存 / 主题 | 脚本逐个 AddDropdown 拼 | `Library:BuildSettingsTab(tab, {Window=...})` |
+| 卸载对话框 | 脚本自己 AddDialog | 设置页内建「卸载」分组，走 `Library:Unload()` |
 
-## 1. 上传（只需做一次）
-
-把 `XJWUI_v1.lua` 上传到仓库根目录：
-
-```
-https://github.com/jiuyijiuyijiuyi91/UIKu
-分支：main
-路径：XJWUI_v1.lua
-```
-
-上传后以下两个地址即可直接加载：
-
-```
-https://raw.githubusercontent.com/jiuyijiuyijiuyi91/UIKu/main/XJWUI_v1.lua
-https://cdn.jsdelivr.net/gh/jiuyijiuyijiuyi91/UIKu@main/XJWUI_v1.lua
-```
-
-## 2. 最简加载（一个网址 = 一个 UI）
+## 二、业务脚本现在只剩这么点
 
 ```lua
-local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/jiuyijiuyijiuyi91/UIKu/main/XJWUI_v1.lua"))()
+local Library = loadXJWUI()  -- 本地/仓库多源加载，和以前一样
 
-local Window = Library:CreateWindow({
-	Title = "XJW中心",
-	Footer = "感谢支持",
-})
+local boot = Library:Boot({ Title = "XJW中心", Chinese = true, Scheme = "orange" })
+
+local Window = Library:CreateWindow({ Title = "XJW中心", Footer = "感谢支持", CornerRadius = 10 })
+local Tabs = {
+    Main = Window:AddTab("示例功能", "sparkles"),
+    Settings = Window:AddTab("UI设置", "settings"),
+}
+
+Tabs.Main:AddLeftGroupbox("示例", "zap"):AddToggle("Demo", { Text = "示例开关", Default = false })
+
+Library:BuildSettingsTab(Tabs.Settings, { Window = Window, Folder = "Revenant" })
+
+task.defer(function() boot:Ready() end)  -- 业务页建完，放开选择面板
 ```
 
-`Library` 就是原生黑曜石库表（`CreateWindow / Notify / Unload / Toggles / ScreenGui / Scheme / SetBackgroundImage …` 全部可用），
-本库扩展接口直接挂在这张表上，不需要 `.Library` 再加一层。
+## 三、`Library:Boot(opts)` 参数
 
-## 3. 扩展接口
+| 字段 | 类型 | 默认 | 说明 |
+|---|---|---|---|
+| `Title` | string | 库默认标题 | 加载窗与首阶段文案 |
+| `Options` | table | `{"灵动岛","悬浮窗","黑曜石悬浮窗"}` | 三选一按钮文案，顺序即按钮顺序 |
+| `Chinese` | bool | `true` | 是否自动打开全量汉化 |
+| `Scheme` | string | 不改 | 启动即套配色，`orange` / `default` |
+| `Loading` | table | — | 覆盖加载窗参数，如 `{WindowWidth=460, WindowHeight=220}` |
+| `OnFinish` | function | — | 选完后回调，入参为选中的样式名 |
 
-| 接口 | 作用 |
-| --- | --- |
-| `Library:CreateWindow(opts)` | 原生 CreateWindow 的默认参数合并版，`Title / Footer / SidebarWidth / TabTextOffset / TabTextSize / CornerRadius / MinSidebarWidth` 可只传部分 |
-| `Library:StyleSidebar(w, offset, size)` | 侧栏中文文字强制显示（默认 176 / 38 / 15） |
-| `Library:EnableChinese(bool)` | 设置页（主题 / 配置 / 弹窗 / 搜索框）汉化 |
-| `Library:Translate(str)` | 单条文案翻译 |
-| `Library:InstallNotify(title)` | 统一通知标题，并翻译通知正文 |
-| `Library.NotifyText(content, title)` | 快捷通知 |
-| `Library.ThemeManager / Library.SaveManager` | 主题、配置管理器（可直接 `SetLibrary(Library)`） |
-| `Library.__XJWCreateWindowRaw(opts)` | 原生 CreateWindow（不走默认值合并） |
+返回 `boot` 句柄：
 
-## 4. 控件写法（与黑曜石一致）
+| 成员 | 说明 |
+|---|---|
+| `boot:Ready()` | 界面就绪，放开选择面板（必须调用，否则一直停在 90%） |
+| `boot.Finish()` | 强制结束加载（不做选择时兜底） |
+| `boot.styleKey` | 当前选中的样式名 |
+| `boot.HideFloats()` | 手动隐藏全部浮窗 |
 
-```lua
-local Window = Library:CreateWindow({ Title = "XJW中心" })
-local Tab = Window:AddTab("主页")
-local Group = Tab:AddLeftGroupbox("基础")
+## 四、`Library:BuildSettingsTab(tab, opts)` 内建内容
 
-Group:AddToggle("FlagId", { Text = "开关", Default = false, Callback = function(v) end })
-Group:AddSlider("SliderId", { Text = "滑块", Min = 1, Max = 100, Default = 50, Rounding = 0 })
-Group:AddButton("BtnId", { Text = "按钮", Func = function() end })
-Group:AddLabel("说明文字")
-```
+`opts`：`{ Window = <主窗口>, Folder = "Revenant", OnUnload = function, Chinese = bool }`
 
-## 5. 文件清单
+页面包含（全部已汉化）：
 
-| 文件 | 说明 |
-| --- | --- |
-| `XJWUI_v1.lua` | 自包含 UI 库（唯一需要上传到仓库的文件，约 640KB） |
-| `XJWUI_示例_v1.lua` | v1 示例：远程加载 + 窗口 / 控件 / 主题配置 / 通知的完整示例 |
-| `移速修改_v1.lua` | 业务脚本：加载 XJWUI 后建窗口，只含功能逻辑，可独立更新 |
+1. **主题管理**：字体、字体颜色、主题列表、自定义主题名、背景图片、主题 JSON 导入导出、设为默认/重置、对比度检查提示。
+2. **配置管理**：配置名、配置列表、创建/加载/覆盖/删除、设为自动加载、配置 JSON 导入导出。
+3. **悬浮窗**：开关方式下拉（灵动岛 / 悬浮窗 / 黑曜石悬浮窗 / 隐藏）、重新选择开关方式、配色下拉（橙曜 / 默认紫）。
+4. **卸载**：按钮 → 确认对话框（取消 / 卸载）→ 调 `Library:Unload()`。
 
-## 6. 本地加载（不走网络）
+## 五、接口清单
 
-执行器支持文件时，把 `XJWUI_v1.lua` 放到 workspace，然后：
+| 接口 | 说明 |
+|---|---|
+| `Library:Boot(opts)` | 启动流程总入口（同 `Library.StartBoot`） |
+| `Library.GetBoot()` | 取当前 boot 句柄 |
+| `Library:Unload()` | 卸载：断开信号、触发 OnUnload、销毁 XJW* 全部 GUI |
+| `XJWUI.BootHiding` | 选择期隐藏浮窗开关，`SetFloatStyle` 期间只记状态不落地 |
+| `XJWUI.BootForce` | 置 true 可打破上面的让路逻辑，立即安装浮窗 |
 
-```lua
-local Library = loadstring(readfile("XJWUI_v1.lua"))()
-```
+## 六、兼容性说明
 
-## 7. 注意
-
-- 库内不写死背景立绘，`SetBackgroundImage` 由业务脚本控制，避免覆盖你的默认立绘逻辑。
-- `Library.ForceCheckbox = true` 已内置，开关走勾选框样式，与之前版本外观一致。
-- 若 `SaveManager` 因执行器缺少 `writefile/isfolder` 而初始化失败，库会降级跳过它，界面仍正常显示。
-*（内容由AI生成，仅供参考）*
+- 旧写法 `Library:PickFloatStyle(...)`、`Library:SetFloatStyle(...)`、`Library:ApplyScheme(...)`、`Library:InstallTitleFlow(...)`、`Library:CreateLoading(...)` 全部保留，签名不变。
+- `BuildSettingsTab` 的开关方式下拉默认值会优先取 `boot.styleKey`，选完即同步。
+- `Library:Unload()` 会先执行库内原有清理逻辑，再补销毁 `XJW*` 前缀的 ScreenGui 与浮窗对象，重复调用安全。
 *（内容由AI生成，仅供参考）*
 *（内容由AI生成，仅供参考）*
