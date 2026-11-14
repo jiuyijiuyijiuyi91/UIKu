@@ -1,27 +1,27 @@
---[[
-	XJWUI v2  自包含黑曜石(Obsidian / Revenant)内核 UI 库
-	------------------------------------------------------------------
-	本文件已把 内核 Library + ThemeManager + SaveManager 全部内嵌，
-	只放一个网址即可得到完整窗口 UI（对应 WindUI / 黑曜石 的加载形态）。
-
-	用法：
-		local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/jiuyijiuyijiuyi91/UIKu/main/XJWUI.lua"))()
-
-		local Window = Library:CreateWindow({
-			Title = "XJW中心",
-			Footer = "感谢支持",
-		})
-		local Tab = Window:AddTab("主页")
-
-	Window 就是完整 UI；Library 同时保留原生接口（AddToggle/AddSlider/Notify/
-	CreateWindow/Unload/SetBackgroundImage …）与本库扩展接口
-	（CreateWindow 默认参数合并、StyleSidebar 侧栏中文、EnableChinese 汉化、
-	InstallNotify 通知标题统一、Translate 文本翻译）。
-	------------------------------------------------------------------
-]]
 
 
-XJWUI = {Version = "v2", Defaults = {
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+XJWUI = {Version = "v5", Defaults = {
 	Title = "XJW中心",
 	Footer = "感谢支持",
 	SidebarWidth = 176,
@@ -32,7 +32,6 @@ XJWUI = {Version = "v2", Defaults = {
 	CornerRadius = 10,
 	MinSidebarWidth = 168,
 	ConfigFolder = "Revenant",
-	InfoText = "基于TSB无延迟UI 改造",
 	BackgroundImage = "https://raw.githubusercontent.com/jiuyijiuyijiuyi91/XJW666/refs/heads/main/XJW%E8%84%9A%E6%9C%AC%E5%A3%81%E7%BA%B8.png",
 	I18n = false,
 }}
@@ -46,7 +45,7 @@ LocalPlayer = Players.LocalPlayer
 DIR = "Revenant"
 REPO = "https://raw.githubusercontent.com/jiuyijiuyijiuyi91/UIKu/main/"
 
--- ===== 内嵌内核源码 =====
+
 local LIBRARY_SOURCE = [====[
 local cloneref = (cloneref or clonereference or function(instance: any)
     return instance
@@ -81,10 +80,10 @@ local Tooltips = {}
 
 local BaseURL = "https://raw.githubusercontent.com/aristooey/Obsidian/refs/heads/main/"
 
--- Per-session GUI names. A fixed name is a string an anti-cheat can grep for, and an
--- empty name is WORSE than a fixed one: nothing else under RobloxGui has Name == "",
--- so it matches with zero false positives. Random gibberish is just as distinctive.
--- These are real CoreGui names, so a scan for any of them hits legitimate instances too.
+
+
+
+
 local GuiNameOptions = {
     "ControlFrame", "TopBarApp", "MenuApp", "ChatMain", "PlayerListApp",
     "BubbleChat", "PurchasePromptApp", "BackpackApp", "EmotesMenuApp",
@@ -227,11 +226,11 @@ local Library = {
     LocalPlayer = LocalPlayer,
     IsRobloxFocused = true,
 
-    --// Device \\--
+    
     DevicePlatform = nil,
     IsMobile = false,
 
-    --// Obsidian Windows \\--
+    
     ScreenGui = nil,
     Floats = nil,
     Overlay = nil,
@@ -239,47 +238,47 @@ local Library = {
     Window = nil,
     WindowContainer = nil,
 
-    --// Search \\--
+    
     SearchText = "",
     Searching = false,
     GlobalSearch = false,
     LastSearchTab = nil,
 
-    --// Tabs \\--
+    
     ActiveTab = nil,
     PreviousTab = nil,
     Tabs = {},
     TabButtons = {},
 
-    --// Dependency Boxes \\--
+    
     DependencyBoxes = {},
 
-    --// Keybinds Frame \\--
+    
     KeybindFrame = nil,
     KeybindContainer = nil,
     KeybindToggles = {},
     KeybindMenu = nil,
 
-    --// Notifications \\--
+    
     Notifications = {},
     NotifySide = "Right",
     NotifyTweenInfo = TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
 
-    --// Dialogues \\--
+    
     Dialogues = {},
     ActiveDialog = nil,
 
-    --// Loading Window \\--
+    
     ActiveLoading = nil,
 
-    --// Context Menu \\--
+    
     ContextMenus = {}, 
 
-    --// Corners \\--
+    
     Corners = {},
     SpecificCorners = {},
 
-    --// Animations \\--
+    
     TweenInfo = TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
 
     TabTransitionInfo = TweenInfo.new(0.22, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
@@ -301,17 +300,17 @@ local Library = {
         KeyPicker = false
     },
 
-    --// States \\--
+    
     Toggled = false,
     Unloaded = false,
 
-    --// Elements \\--
+    
     Labels = Labels,
     Buttons = Buttons,
     Toggles = Toggles,
     Options = Options,
 
-    --// Options \\--
+    
     ToggleKeybind = Enum.KeyCode.RightControl,
     ShowToggleFrameInKeybinds = true,
 
@@ -322,12 +321,12 @@ local Library = {
     CantDragForced = false,
     DraggableElements = {},
 
-    --// Pop Out \\--
+    
     PopOutSnapDistance = 80,
     PopOutDragThreshold = 8,
     PopOutHoldTime = 0.15,
 
-    --// Signals \\--
+    
     Signals = {},
     UnloadSignals = {},
 
@@ -336,7 +335,7 @@ local Library = {
     DPIScale = 1,
     CornerRadius = 4,
 
-    --// Scheme \\--
+    
     IsLightTheme = false,
     Scheme = {
         BackgroundColor = Color3.fromRGB(15, 15, 15),
@@ -354,20 +353,20 @@ local Library = {
         BackgroundImage = ""
     },
 
-    --// Registry \\--
+    
     Registry = {},
     Scales = {},
     ScalesOffset = {},
 
-    --// Mouse \\--
+    
     OriginalMouseIconEnabled = UserInputService.MouseIconEnabled,
     ShowCursorBinding = string.sub(tostring({}), 10),
 
-    --// Image Manager \\--
+    
     ImageManager = CustomImageManager,
 
-    --// Misc \\--
-    Notify = nil, Toggle = nil -- we love luau lsp
+    
+    Notify = nil, Toggle = nil 
 }
 
 if RunService:IsStudio() then
@@ -388,7 +387,7 @@ else
 end
 
 local Templates = {
-    --// UI \\--
+    
     Frame = {
         BorderSizePixel = 0,
     },
@@ -433,7 +432,7 @@ local Templates = {
         ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
     },
 
-    --// Library \\--
+    
     Window = {
         Title = "No Title",
         Footer = "No Footer",
@@ -447,7 +446,7 @@ local Templates = {
         Resizable = true,
         AlwaysOnTop = false,
 
-        --// Window Snapping \\--
+        
         Snapping = false,
         SnapDistance = 28,
         SnapMargin = 8,
@@ -474,18 +473,18 @@ local Templates = {
         SidebarCompacted = false,
         MinContainerWidth = 256,
 
-        --// Snapping \\--
+        
         MinSidebarWidth = 128,
         SidebarCompactWidth = 48,
         SidebarCollapseThreshold = 0.5,
 
-        --// Dragging \\--
+        
         CompactWidthActivation = 128,
 
-        --// Background \\--
+        
         BackgroundImage = "",
 
-        --// Animations \\--
+        
         Animations = {
             ToggleWindow = false,
             TabSwitch = false,
@@ -657,7 +656,7 @@ local Templates = {
         Visible = true,
     },
 
-    --// Addons \\-
+    
     KeyPicker = {
         Text = "KeyPicker",
 
@@ -701,7 +700,7 @@ local SideIndex = {
     right = 2,
 }
 
---// Scheme Functions \\--
+
 local SchemeReplaceAlias = {
     RedColor = "Red",
     WhiteColor = "White",
@@ -741,7 +740,7 @@ local function GetTextStrokeColor(): Color3
     return (Color.R * 0.299 + Color.G * 0.587 + Color.B * 0.114) > 0.5 and Library.Scheme.DarkColor or Library.Scheme.WhiteColor
 end
 
---// Basic Functions \\--
+
 local function WaitForEvent(Event, Timeout, Condition)
     local Bindable = Instance.new("BindableEvent")
     local Connection = Event:Once(function(...)
@@ -849,7 +848,7 @@ local function Round(Value, Rounding)
     return tonumber(string.format("%." .. Rounding .. "f", Value))
 end
 
---// Fuzzy Search \\--
+
 local function LowerText(Text: string): string
     return (Text:lower():gsub("[\195\206\208][\128-\191]", function(Char)
         local Code = utf8.codepoint(Char)
@@ -871,7 +870,7 @@ local function FuzzyScore(Text: string, Search: string): (boolean, number)
         return false, 0
     end
 
-    --// Fast path: literal substring match (also the best possible score) \\--
+    
     local ExactIdx = Text:find(Search, 1, true)
     if ExactIdx then
         local PrevChar = ExactIdx > 1 and Text:sub(ExactIdx - 1, ExactIdx - 1) or ""
@@ -880,7 +879,7 @@ local function FuzzyScore(Text: string, Search: string): (boolean, number)
         return true, 1e5 - ExactIdx + (AtBoundary and 500 or 0) + (Search:len() * 5)
     end
 
-    --// Fallback: fuzzy, in-order, non-consecutive character matching \\--
+    
     local TextChars, SearchChars = {}, {}
     for Char in Text:gmatch(utf8.charpattern) do table.insert(TextChars, Char) end
     for Char in Search:gmatch(utf8.charpattern) do table.insert(SearchChars, Char) end
@@ -913,10 +912,10 @@ local function FuzzyScore(Text: string, Search: string): (boolean, number)
     end
 
     if SearchIdx <= SearchLen then
-        return false, 0 --// Not every Search character was found, in order
+        return false, 0 
     end
 
-    Score -= (LastMatchIdx - SearchLen) * 0.05 --// Slightly favour tighter matches
+    Score -= (LastMatchIdx - SearchLen) * 0.05 
     return true, Score
 end
 
@@ -968,7 +967,7 @@ local function MatchesSearch(ElementInfo, Search: string, ForceMatch: boolean?):
         return true
     end
 
-    --// Optional: search inside Dropdown value lists, so e.g. searching a specific option name reveals the Dropdown that contains it \\--
+    
     if typeof(ElementInfo.Values) == "table" then
         local Checked = 0
         for Key, Value in ElementInfo.Values do
@@ -1048,10 +1047,10 @@ local function CheckDepbox(Box, Search, ForceVisible: boolean?)
             ElementInfo.Holder.Visible = false
             continue
         elseif ElementInfo.SubButton then
-            --// Check if any of the Buttons Name matches with Search
+            
             local Visible = false
 
-            --// Check if Search matches Element's Name and if Element is Visible
+            
             if MatchesSearch(ElementInfo, Search, ForceVisible) and ElementInfo.Visible then
                 Visible = true
                 BestScore = math.max(BestScore, FuzzyMatchScore(ElementInfo.Text, Search))
@@ -1072,7 +1071,7 @@ local function CheckDepbox(Box, Search, ForceVisible: boolean?)
             continue
         end
 
-        --// Check if Search matches Element's Name and if Element is Visible
+        
         if ElementInfo.Text and MatchesSearch(ElementInfo, Search, ForceVisible) and ElementInfo.Visible then
             ElementInfo.Holder.Visible = true
             VisibleElements += 1
@@ -1117,7 +1116,7 @@ local function RestoreDepbox(Box)
     end
 end
 
---// Pop Out
+
 function SyncPopOutVisibility(Box: any)
     if not Box.PopOutFloat then
         return
@@ -1218,7 +1217,7 @@ local function GetPopOutBodyMaxHeight(Box: any, Reserved: number): number
     return ScreenMax
 end
 
---// Search
+
 local function ApplySearchToTab(Tab, Search)
     if not Tab then
         return false, 0
@@ -1227,7 +1226,7 @@ local function ApplySearchToTab(Tab, Search)
     local HasVisible = false
     local BestScore = 0
 
-    --// If the Tab itself matches Search (by name/description), don't filter out its contents -- pull everything in the Tab along with it \\--
+    
     local TabMatches = TryFuzzyMatch(Tab.Name, Search) or TryFuzzyMatch(Tab.Description, Search)
     BestScore = math.max(BestScore, FuzzyMatchScore(Tab.Name, Search), FuzzyMatchScore(Tab.Description, Search))
 
@@ -1236,7 +1235,7 @@ local function ApplySearchToTab(Tab, Search)
             continue
         end
 
-        --// Optional: matching the Groupbox's own name/description reveals every element inside it, without needing each one to match too
+        
         local GroupboxMatches = TabMatches or (TryFuzzyMatch(Groupbox.Name, Search) or TryFuzzyMatch(Groupbox.Description, Search))
         BestScore = math.max(BestScore, FuzzyMatchScore(Groupbox.Name, Search), FuzzyMatchScore(Groupbox.Description, Search))
 
@@ -1246,7 +1245,7 @@ local function ApplySearchToTab(Tab, Search)
                 ElementInfo.Holder.Visible = false
                 continue
             elseif ElementInfo.SubButton then
-                --// Check if any of the Buttons Name matches with Search
+                
                 local Visible = false
                 if MatchesSearch(ElementInfo, Search, GroupboxMatches) and ElementInfo.Visible then
                     Visible = true
@@ -1270,7 +1269,7 @@ local function ApplySearchToTab(Tab, Search)
                 continue
             end
 
-            --// Check if Search matches Element's Name and if Element is Visible
+            
             if ElementInfo.Text and MatchesSearch(ElementInfo, Search, GroupboxMatches) and ElementInfo.Visible then
                 ElementInfo.Holder.Visible = true
                 VisibleElements += 1
@@ -1292,7 +1291,7 @@ local function ApplySearchToTab(Tab, Search)
             end
         end
 
-        --// Update Groupbox Size and Visibility if found any element
+        
         if VisibleElements > 0 then
             Groupbox:Resize()
             HasVisible = true
@@ -1309,7 +1308,7 @@ local function ApplySearchToTab(Tab, Search)
         for _, SubTab in Tabbox.Tabs do
             VisibleElements[SubTab] = 0
 
-            --// Optional: matching a Tabbox sub-tab's own name reveals every element inside it, without needing each one to match too
+            
             local SubTabMatches = TabMatches or TryFuzzyMatch(SubTab.Name, Search)
             local SubScore = FuzzyMatchScore(SubTab.Name, Search)
             BestScore = math.max(BestScore, SubScore)
@@ -1319,7 +1318,7 @@ local function ApplySearchToTab(Tab, Search)
                     ElementInfo.Holder.Visible = false
                     continue
                 elseif ElementInfo.SubButton then
-                    --// Check if any of the Buttons Name matches with Search
+                    
                     local Visible = false
                     if MatchesSearch(ElementInfo, Search, SubTabMatches) and ElementInfo.Visible then
                         Visible = true
@@ -1347,7 +1346,7 @@ local function ApplySearchToTab(Tab, Search)
                     continue
                 end
 
-                --// Check if Search matches Element's Name and if Element is Visible
+                
                 if ElementInfo.Text and MatchesSearch(ElementInfo, Search, SubTabMatches) and ElementInfo.Visible then
                     ElementInfo.Holder.Visible = true
                     VisibleElements[SubTab] += 1
@@ -1400,7 +1399,7 @@ local function ApplySearchToTab(Tab, Search)
             BestSubTab:Show()
         end
 
-        --// Update Tabbox Visibility if any visible
+        
         Tabbox.BoxHolder.Visible = VisibleTabs > 0
         SyncPopOutVisibility(Tabbox)
     end
@@ -1624,9 +1623,9 @@ local function LoadIconModule()
     for _, Url in ipairs(ICON_SOURCES) do
         local Ok, Module = pcall(function()
             local Source = game:HttpGet(Url)
-            -- An empty/failed HttpGet still compiles: loadstring("") returns a
-            -- valid chunk that yields nil. That is exactly how Icons ended up nil
-            -- while FetchIcons was true, and GetIcon then indexed nil.
+            
+            
+            
             if typeof(Source) ~= "string" or #Source < 512 then
                 return nil
             end
@@ -1646,8 +1645,8 @@ end
 local FetchIcons, Icons = LoadIconModule()
 
 function Library:GetIcon(IconName: string): Icon?
-    -- Validate the module itself, not just the pcall result. A missing icon set
-    -- should mean "no icon", never a crash that takes the whole library down.
+    
+    
     if not FetchIcons or not IsIconModule(Icons) then
         return nil
     end
@@ -1656,8 +1655,8 @@ function Library:GetIcon(IconName: string): Icon?
     return if Success then Icon else nil
 end
 
--- Retry in the background if the first fetch failed, so a transient network
--- blip doesn't leave the UI iconless for the whole session.
+
+
 if not FetchIcons then
     task.spawn(function()
         for _ = 1, 3 do
@@ -1675,9 +1674,9 @@ if not FetchIcons then
     end)
 end
 
--- Download a web image (http/https) and expose it via getcustomasset so an
--- ImageLabel can actually render it (Roblox can't load raw web links directly).
--- Cached in memory + on disk so a given URL is only fetched once.
+
+
+
 Library._UrlAssetCache = Library._UrlAssetCache or {}
 function Library:GetImageFromUrl(Url: string): string?
     if typeof(Url) ~= "string" then
@@ -1687,10 +1686,10 @@ function Library:GetImageFromUrl(Url: string): string?
         return Library._UrlAssetCache[Url]
     end
     if not (getcustomasset and writefile) then
-        return nil -- executor lacks file/custom-asset support
+        return nil 
     end
 
-    -- stable filename per URL; keep the original extension if present, else .png
+    
     local ext = Url:match("%.(%w%w%w%w?)$") or "png"
     local safe = Url:gsub("%W", ""):sub(-40)
     local folder = "obsidian_images"
@@ -1721,7 +1720,7 @@ function Library:GetCustomIcon(IconName: string): any
         return nil
     end
 
-    -- Web-URL background/icon support: turn an http(s) link into a usable asset.
+    
     if typeof(IconName) == "string" and IconName:match("^https?://") then
         local Asset = Library:GetImageFromUrl(IconName)
         if Asset then
@@ -1782,7 +1781,7 @@ function Library:Validate(Table: { [string]: any }, Template: { [string]: any })
     return Table
 end
 
---// Creator Functions \\--
+
 local function FillInstance(Table: { [string]: any }, Instance: GuiObject)
     local ThemeProperties = Library.Registry[Instance] or {}
 
@@ -1823,7 +1822,7 @@ local function New(ClassName: string, Properties: { [string]: any }): any
     return Instance
 end
 
---// Icon Instances \\--
+
 local IconTextProperties = { ImageColor3 = "TextColor3", ImageTransparency = "TextTransparency" }
 local IconSharedProperties = { "Name", "AnchorPoint", "Position", "Size", "SizeConstraint", "LayoutOrder", "ZIndex", "Visible", "Rotation", "ImageColor3", "ImageTransparency" }
 
@@ -1928,7 +1927,7 @@ function Library:ApplyIcon(Target: GuiObject, Icon: Icon?): GuiObject
     return Target
 end
 
---// DEPRECATED
+
 function Library:ApplyLucideIcon(ImageGui: ImageLabel | ImageButton, Icon: Icon, Rotation: number?)
     warn("Obsidian:ApplyLucideIcon is deprecated, please use Obsidian:CreateIcon or Obsidian:ApplyIcon instead.")
 
@@ -1936,7 +1935,7 @@ function Library:ApplyLucideIcon(ImageGui: ImageLabel | ImageButton, Icon: Icon,
     FillInstance(ImageContent(Icon), ImageGui)
 end
 
---// Main Instances \\-
+
 local function SafeParentUI(Instance: Instance, Parent: Instance | () -> Instance)
     local success, _error = pcall(function()
         if not Parent then
@@ -2014,7 +2013,7 @@ local ModalElement = New("TextButton", {
     Parent = ScreenGui,
 })
 
---// Floats and Overlays
+
 local Floats = New("Frame", {
     BackgroundTransparency = 1,
     Size = UDim2.fromScale(1, 1),
@@ -2034,7 +2033,7 @@ local Overlay = New("Frame", {
 Library.Floats = Floats
 Library.Overlay = Overlay
 
---// Cursor
+
 local Cursor
 local CursorCross
 local InnerCross = {}
@@ -2111,7 +2110,7 @@ local function RestoreMouseIcon()
     if Cursor then Cursor.Visible = false end
 end
 
---// Notification \\--
+
 local NotificationArea
 local NotifyOrder = {}
 do
@@ -2131,7 +2130,7 @@ do
     )
 end
 
---// Icons \\--
+
 local CheckIcon, ArrowIcon, ResizeIcon, KeyIcon, MoveIcon, PopOutIcon, CloseIcon, SettingsIcon
 function Library:SetIconModule(module: IconModule)
     FetchIcons = true
@@ -2169,7 +2168,7 @@ do
     end
 end
 
---// Lib Functions \\--
+
 Library.Cursor = {}
 
 function Library.Cursor:ResetCross()
@@ -2223,43 +2222,43 @@ function Library.Cursor:ChangeIconSize(Size: UDim2)
     CursorCustomImage.Size = Size
 end
 
---// DEPRECATED
+
 function Library:ChangeCursorCrossColor(Color: Color3)
     warn("Obsidian:ChangeCursorCrossColor is deprecated, please use Obsidian.Cursor:ChangeCrossColor instead.")
     Library.Cursor:ChangeCrossColor(Color)
 end
 
---// DEPRECATED
+
 function Library:ResetCursorCross()
     warn("Obsidian:ResetCursorCross is deprecated, please use Obsidian.Cursor:ResetCross instead.")
     Library.Cursor:ResetCross()
 end
 
---// DEPRECATED
+
 function Library:ChangeCursorIcon(ImageId: string)
     warn("Obsidian:ChangeCursorIcon is deprecated, please use Obsidian.Cursor:ChangeIcon instead.")
     Library.Cursor:ChangeIcon(ImageId)
 end
 
---// DEPRECATED
+
 function Library:ChangeCursorIconColor(Color: Color3)
     warn("Obsidian:ChangeCursorIconColor is deprecated, please use Obsidian.Cursor:ChangeIconColor instead.")
     Library.Cursor:ChangeIconColor(Color)
 end
 
---// DEPRECATED
+
 function Library:ChangeCursorIconSize(Size: UDim2)
     warn("Obsidian:ChangeCursorIconSize is deprecated, please use Obsidian.Cursor:ChangeIconSize instead.")
     Library.Cursor:ChangeIconSize(Size)
 end
 
---// DEPRECATED
+
 function Library:ResetCursorIcon()
     warn("Obsidian:ResetCursorIcon is deprecated, please use Obsidian.Cursor:ResetIcon instead.")
     Library.Cursor:ResetIcon()
 end
 
---// Colors \\--
+
 function Library:GetBetterColor(Color: Color3, Add: number): Color3
     Add = Add * (Library.IsLightTheme and -4 or 2)
     return Color3.fromRGB(
@@ -2420,7 +2419,7 @@ function PositionDraggable(UI: GuiObject, StartPos: UDim2?)
     UI.Position = GetNonOverlappingPosition(UI, StartPos)
 end
 
---// Window Snapping \\--
+
 local function GetCoreGuiInset(): (Vector2, Vector2)
     local Success, TopLeft, BottomRight = pcall(function()
         return GuiService:GetGuiInset()
@@ -2478,7 +2477,7 @@ local function GetSnapGuideOffset(Name: string, SnappedValue: number, ElemDimens
         return SnappedValue + ElemDimension / 2
     end
 
-    return SnappedValue -- LeftEdge / TopEdge
+    return SnappedValue 
 end
 
 function Library:MakeDraggable(
@@ -2789,7 +2788,7 @@ function Library:AddBlank(Frame: GuiObject, Size: UDim2)
     })
 end
 
---// Animations \\--
+
 local ActiveTabTweens = setmetatable({}, { __mode = "k" })
 
 function Library:PlayTabAnimation(Tab, Showing: boolean, OnComplete: (() -> ())?, PreviousTab: any?)
@@ -2839,8 +2838,8 @@ function Library:PlayTabAnimation(Tab, Showing: boolean, OnComplete: (() -> ())?
             local PreviousOrder = PreviousTab.Button.LayoutOrder
             if CurrentOrder and PreviousOrder and Tab.IsSubTab then
                 StartPosition = CurrentOrder > PreviousOrder and StartingPositions.Right or StartingPositions.Left
-            elseif CurrentOrder and PreviousOrder then -- this may be unnecessary but oh well
-                StartPosition = CurrentOrder > PreviousOrder and StartingPositions.Top or StartingPositions.Bottom -- bigger order means its under the current button
+            elseif CurrentOrder and PreviousOrder then 
+                StartPosition = CurrentOrder > PreviousOrder and StartingPositions.Top or StartingPositions.Bottom 
             else
                 StartPosition = StartingPositions.Bottom
             end
@@ -2850,7 +2849,7 @@ function Library:PlayTabAnimation(Tab, Showing: boolean, OnComplete: (() -> ())?
             StartPosition = StartingPositions.Top
         elseif SwipeFrom == "right" then
             StartPosition = StartingPositions.Right
-        else -- bottom (Default)
+        else 
             StartPosition = StartingPositions.Bottom
         end
 
@@ -2894,7 +2893,7 @@ function Library:PlayTabAnimation(Tab, Showing: boolean, OnComplete: (() -> ())?
     end
 end
 
---// Pop Out \\--
+
 function Library:MakeBoxPopOut(Box: any, Options: {
     Enabled: boolean?,
     Header: GuiObject?,
@@ -2941,7 +2940,7 @@ function Library:MakeBoxPopOut(Box: any, Options: {
     local DragChanged: RBXScriptConnection?
     local DragDidMove = false
 
-    --// UI Handler
+    
     local function GetPopOutWidth(): number
         if typeof(Box.PopOutWidth) == "number" then
             return math.max(50, math.floor(Box.PopOutWidth + 0.5))
@@ -3219,7 +3218,7 @@ function Library:MakeBoxPopOut(Box: any, Options: {
         ApplyPopOutWidth()
     end
 
-    --// Drag Handler
+    
     local function StopDrag()
         if DragState == "Idle" then
             return
@@ -3363,7 +3362,7 @@ function Library:MakeBoxPopOut(Box: any, Options: {
     end))
 end
 
---// Deprecated \\--
+
 function Library:MakeOutline(Frame: GuiObject, Corner: number?, ZIndex: number?)
     warn("Obsidian:MakeOutline is deprecated, please use Obsidian:AddOutline instead.")
     local Holder = New("Frame", {
@@ -3819,7 +3818,7 @@ function Library:AddDraggableImageButton(...)
     return DraggableImageButton
 end
 
---// Watermark - Deprecated \\--
+
 do
     local WatermarkLabel = Library:AddDraggableLabel("")
     WatermarkLabel:SetVisible(false)
@@ -3835,7 +3834,7 @@ do
     end
 end
 
---// Context Menu \\--
+
 local CurrentMenu
 
 local function CloseMenus(Until: any?, ShouldClose: ((Menu: any) -> boolean)?)
@@ -3859,7 +3858,7 @@ function Library:AddContextMenu(
     List: number?,
     ActiveCallback: (Active: boolean) -> ()?,
     IgnoreCornerRadius: boolean?,
-    SpecificCornersOnly: ("top" | "bottom" | "no_left" | "no_top_left")?, -- stupid way of doing this
+    SpecificCornersOnly: ("top" | "bottom" | "no_left" | "no_top_left")?, 
     AnimationType: ("Dropdown" | "KeyPicker" | "none")?
 )
     local Menu
@@ -4218,7 +4217,7 @@ Library:GiveSignal(UserInputService.InputBegan:Connect(function(Input: InputObje
     end
 end))
 
---// Tooltip \\--
+
 local TooltipLabel = New("TextLabel", {
     BackgroundColor3 = "BackgroundColor",
     TextSize = 14,
@@ -4413,9 +4412,9 @@ do
             Connections = {},
 
             Text = Info.Text,
-            Value = Info.Default, -- Key
-            Modifiers = Info.DefaultModifiers, -- Modifiers
-            DisplayValue = Info.Default, -- Picker Text
+            Value = Info.Default, 
+            Modifiers = Info.DefaultModifiers, 
+            DisplayValue = Info.Default, 
 
             Blacklisted = Info.Blacklisted,
             BlacklistedModifiers = Info.BlacklistedModifiers,
@@ -4457,7 +4456,7 @@ do
         local Picking = false
         local IsForButton = ParentObj.Type == "Button" or ParentObj.Type == "SubButton"
 
-        -- Special Keys
+        
         local SpecialKeys = {
             ["MB1"] = Enum.UserInputType.MouseButton1,
             ["MB2"] = Enum.UserInputType.MouseButton2,
@@ -4470,7 +4469,7 @@ do
             [Enum.UserInputType.MouseButton3] = "MB3",
         }
 
-        -- Modifiers
+        
         local Modifiers = {
             ["LAlt"] = Enum.KeyCode.LeftAlt,
             ["RAlt"] = Enum.KeyCode.RightAlt,
@@ -4743,8 +4742,8 @@ do
         end
 
         local KeybindsToggle = { Normal = KeyPicker.Mode ~= "Toggle" }
-        -- Expose the list entry on the KeyPicker so external code (e.g. TSB's
-        -- RenderStepped keybind sync) can control its visibility directly.
+        
+        
         KeyPicker.KeybindsToggle = KeybindsToggle
         do
             local Holder = New("TextButton", {
@@ -4848,7 +4847,7 @@ do
                 Label.Position = (not IsPress and not Normal) and UDim2.fromOffset(22, 0) or UDim2.fromOffset(0, 0)
             end
 
-            KeyPicker.DoClick = function(...) end --// make luau lsp shut up
+            KeyPicker.DoClick = function(...) end 
             table.insert(KeyPicker.Connections, Holder.MouseButton1Click:Connect(function()
                 if KeyPicker.Mode == "Press" then
                     KeyPicker:DoClick()
@@ -5218,11 +5217,11 @@ do
                 return
             end
 
-            -- External visibility control: code (e.g. TSB's _syncKBVis) can set
-            -- KeyPicker.ForceListHidden to keep a keybind out of the on-screen list
-            -- until the feature that uses it is toggled on. Respected here so
-            -- Update() never re-shows a keybind that is meant to stay hidden,
-            -- regardless of the keybind's Mode or what element it is attached to.
+            
+            
+            
+            
+            
             if KeyPicker.ForceListHidden then
                 KeybindsToggle:SetVisibility(false)
                 return
@@ -5421,7 +5420,7 @@ do
                 Picker.Size = IsForButton and UDim2.new(0, 29, 1, 0) or UDim2.fromOffset(29, 21)
             end
 
-            -- Wait for any input --
+            
             local ActiveModifiers = {}
             local CurrentInput = nil
 
@@ -5465,7 +5464,7 @@ do
                 return true
             end
 
-            -- Wait for the first valid InputBegan --
+            
             while true do
                 local InputObj = UserInputService.InputBegan:Wait()
                 if UserInputService:GetFocusedTextBox() ~= nil then
@@ -5479,13 +5478,13 @@ do
                 end
             end
 
-            -- If it's a modifier key, we wait for either its release or another input --
+            
             while IsModifierInput(CurrentInput) do
                 if CurrentInput.KeyCode == Enum.KeyCode.Escape then
                     break
                 end
 
-                -- Display the current state including the current modifier key --
+                
                 local ModName = ModifiersInput[CurrentInput.KeyCode]
                 if ModName then
                     local text = if #ActiveModifiers > 0 then table.concat(ActiveModifiers, " + ") .. " + " .. ModName .. " + ..." else ModName .. " + ..."
@@ -5526,9 +5525,9 @@ do
                 end
 
                 if Released then
-                    break -- Use modifier key as bind
+                    break 
                 elseif NextInput then
-                    -- Add another modifier or continue to normal key
+                    
                     local OldModName = ModifiersInput[CurrentInput.KeyCode]
                     if OldModName and not table.find(ActiveModifiers, OldModName) then
                         ActiveModifiers[#ActiveModifiers + 1] = OldModName
@@ -5776,7 +5775,7 @@ do
             })
         )
 
-        --// Color Menu \\--
+        
         local MapSize = Library.IsMobile and 140 or 200
         local BarWidth = 16
         local MenuWidth = MapSize + BarWidth + 6 + 12
@@ -5819,7 +5818,7 @@ do
         ColorMenu.List.Padding = UDim.new(0, 8)
         ColorPicker.ColorMenu = ColorMenu
 
-        --// Content Holder \\--
+        
         local ContentHolder = New("Frame", {
             AutomaticSize = Enum.AutomaticSize.Y,
             BackgroundTransparency = 1,
@@ -5838,7 +5837,7 @@ do
             Parent = ContentHolder,
         })
 
-        --// Footer \\--
+        
         local FooterHeight = Library.IsMobile and 30 or 22
 
         local FooterBackground = New("Frame", {
@@ -5916,7 +5915,7 @@ do
             Parent = ColorHolder,
         })
 
-        --// Sat Map
+        
         local SatVipMap = New("ImageButton", {
             BackgroundColor3 = ColorPicker.Value,
             Image = CustomImageManager.GetAsset("SaturationMap"),
@@ -5939,7 +5938,7 @@ do
             Parent = SatVibCursor,
         })
 
-        --// Hue
+        
         local HueSelector = New("TextButton", {
             Size = UDim2.fromOffset(BarWidth, MapSize),
             Text = "",
@@ -5961,7 +5960,7 @@ do
             Parent = HueSelector,
         })
 
-        --// Alpha
+        
         local TransparencySelector, TransparencyColor, TransparencyCursor
         if Info.Transparency then
             TransparencySelector = New("ImageButton", {
@@ -5997,7 +5996,7 @@ do
             })
         end
 
-        --// Resizing \\--
+        
         local ResizeGrabber
         if Info.Resizable then
             local BaseMapSize = 200
@@ -6166,7 +6165,7 @@ do
             })
         )
 
-        --// Context Menu \\--
+        
         local ContextMenu
         ContextMenu = Library:AddContextMenu(Holder, UDim2.fromOffset(93, 0), function()
             return { Holder.AbsoluteSize.X + 1.5, 0.5 }
@@ -6222,7 +6221,7 @@ do
                 Library.CopiedColor = { ColorPicker.Value, ColorPicker.Transparency }
             end)
 
-            ColorPicker.SetValueRGB = function(...) end --// make luau lsp shut up
+            ColorPicker.SetValueRGB = function(...) end 
             CreateButton("Paste color", function()
                 if not Library.CopiedColor then
                     return
@@ -6246,7 +6245,7 @@ do
             end
         end
 
-        --// Copy/Paste Buttons \\--
+        
         local ActionHolder = New("Frame", {
             BackgroundTransparency = 1,
             Size = UDim2.new(1, 0, 0, 20),
@@ -6362,7 +6361,7 @@ do
             end)
         end))
 
-        --// End \\--
+        
         function ColorPicker:SetHSVFromRGB(Color)
             ColorPicker.Hue, ColorPicker.Sat, ColorPicker.Vib = Color:ToHSV()
         end
@@ -7880,15 +7879,15 @@ do
                         Addon.Toggled = Toggle.Value
                         Addon:Update()
                     elseif Addon.Mode == "Toggle" and not Toggle.Value then
-                        -- General keybind desync fix: a Toggle-mode keybind keeps
-                        -- its own .Toggled state independent of the toggle (since
-                        -- SyncToggleState is off). If the toggle is switched OFF
-                        -- while the keybind is still 'on', that stale true would make
-                        -- the next keypress a no-op / flip things backwards. So
-                        -- whenever the toggle goes false, clear the keybind's toggled
-                        -- state (and refresh its on-screen entry) so they stay in
-                        -- lockstep. Enabling never force-sets it, so the first press
-                        -- after re-enabling still turns the feature on.
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
                         Addon.Toggled = false
                         Addon:Update()
                     end
@@ -8169,15 +8168,15 @@ do
                         Addon.Toggled = Toggle.Value
                         Addon:Update()
                     elseif Addon.Mode == "Toggle" and not Toggle.Value then
-                        -- General keybind desync fix: a Toggle-mode keybind keeps
-                        -- its own .Toggled state independent of the toggle (since
-                        -- SyncToggleState is off). If the toggle is switched OFF
-                        -- while the keybind is still 'on', that stale true would make
-                        -- the next keypress a no-op / flip things backwards. So
-                        -- whenever the toggle goes false, clear the keybind's toggled
-                        -- state (and refresh its on-screen entry) so they stay in
-                        -- lockstep. Enabling never force-sets it, so the first press
-                        -- after re-enabling still turns the feature on.
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
                         Addon.Toggled = false
                         Addon:Update()
                     end
@@ -9371,8 +9370,8 @@ do
             local DisabledValues = Dropdown.DisabledValues
             local IsDictionary = not IsSequentialArray(Values)
 
-            --// Fuzzy-match dropdown values the same way the sidebar search
-            --// does, so e.g. "clr" can find "Clear Inventory" in a list \\--
+            
+            
             local SearchQuery = SearchBox and NormalizeSearch(LowerText(SearchBox.Text)) or ""
             local IsSearching = SearchQuery ~= ""
 
@@ -9447,7 +9446,7 @@ do
                         continue
                     end
 
-                    --// Best matches first; ties fall back to original order \\--
+                    
                     table.sort(Items, function(A, B)
                         if A.MatchScore ~= B.MatchScore then
                             return A.MatchScore > B.MatchScore
@@ -11833,7 +11832,7 @@ function Library:CreateWindow(WindowInfo)
 
     local TabButtonsStyle = WindowInfo.TabButtonsStyle
 
-    --// Old Naming \\--
+    
     if WindowInfo.Compact ~= nil then
         WindowInfo.SidebarCompacted = WindowInfo.Compact
     end
@@ -12223,7 +12222,7 @@ function Library:CreateWindow(WindowInfo)
             MainFrame.Position = UDim2.new(0.5, -MainFrame.Size.X.Offset / 2, 0.5, -MainFrame.Size.Y.Offset / 2)
         end
 
-        --// Top Bar \\-
+        
         TopBar = New("Frame", {
             BackgroundTransparency = 1,
             Size = UDim2.new(1, 0, 0, 48),
@@ -12231,7 +12230,7 @@ function Library:CreateWindow(WindowInfo)
         })
         Library:MakeDraggable(MainFrame, TopBar, false, true, WindowSnapConfig)
 
-        --// Title \\--
+        
         TitleHolder = New("Frame", {
             BackgroundTransparency = 1,
             Size = UDim2.new(0, InitialLeftWidth, 1, 0),
@@ -12284,7 +12283,7 @@ function Library:CreateWindow(WindowInfo)
         end
         RefreshWindowTitleSize()
 
-        --// Top Right Bar \\--
+        
         RightWrapper = New("Frame", {
             AnchorPoint = Vector2.new(1, 0.5),
             BackgroundTransparency = 1,
@@ -12417,7 +12416,7 @@ function Library:CreateWindow(WindowInfo)
             })
         end
 
-        --// Bottom Bar \\--
+        
         local BottomClip = New("Frame", {
             AnchorPoint = Vector2.new(0, 1),
             BackgroundTransparency = 1,
@@ -12461,7 +12460,7 @@ function Library:CreateWindow(WindowInfo)
             Parent = BottomBackground,
         })
 
-        --// Footer \\-
+        
         FooterLabel = New("TextLabel", {
             BackgroundTransparency = 1,
             Size = UDim2.fromScale(1, 1),
@@ -12471,7 +12470,7 @@ function Library:CreateWindow(WindowInfo)
             Parent = BottomBar,
         })
 
-        --// Resize Button \\--
+        
         if WindowInfo.Resizable then
             ResizeButton = New("TextButton", {
                 AnchorPoint = Vector2.new(1, 0),
@@ -12498,7 +12497,7 @@ function Library:CreateWindow(WindowInfo)
             Parent = ResizeButton,
         })
 
-        --// Tabs \\--
+        
         Tabs = New("ScrollingFrame", {
             AutomaticCanvasSize = Enum.AutomaticSize.Y,
             BackgroundColor3 = "BackgroundColor",
@@ -12521,7 +12520,7 @@ function Library:CreateWindow(WindowInfo)
             Parent = Tabs,
         })
 
-        --// Container \\--
+        
         Container = New("Frame", {
             AnchorPoint = Vector2.new(1, 0),
             BackgroundColor3 = function()
@@ -12544,7 +12543,7 @@ function Library:CreateWindow(WindowInfo)
         Library.WindowContainer = Container
     end
 
-    --// Window Table \\--
+    
     local Window = {}
     local Fading = false
 
@@ -13021,7 +13020,7 @@ function Library:CreateWindow(WindowInfo)
             })
         end
 
-        --// Tab Container \\--
+        
         TabContainer = New("Frame", {
             BackgroundTransparency = 1,
             Position = UDim2.fromScale(0, 0),
@@ -13137,7 +13136,7 @@ function Library:CreateWindow(WindowInfo)
             end
         end
 
-        --// Tab Table \\--
+        
         local Tab = {
             Name = Name,
             Description = Description,
@@ -13170,7 +13169,7 @@ function Library:CreateWindow(WindowInfo)
             Tabboxes = {},
             DependencyGroupboxes = {},
 
-            --// Sub Tabs \\--
+            
             HasSubTabs = HasSubTabs,
             SubTabBar = SubTabBar,
             SubTabHolder = SubTabHolder,
@@ -13181,7 +13180,7 @@ function Library:CreateWindow(WindowInfo)
             PreviousSubTab = nil,
         }
 
-        --// Warning Box \\--
+        
         local WarningBoxHolder = New("Frame", {
             AutomaticSize = Enum.AutomaticSize.Y,
             BackgroundTransparency = 1,
@@ -13293,7 +13292,7 @@ function Library:CreateWindow(WindowInfo)
             })
         end
 
-        --// Tab Handlers \\--
+        
         function Tab:UpdateWarningBox(Info)
             if HasSubTabs then
                 error(string.format("Tab '%s' uses SubTabs, update the warning box of a subtab instead", Name))
@@ -13703,7 +13702,7 @@ function Library:CreateWindow(WindowInfo)
                     end
                 end
 
-                --// Execution \\--
+                
                 if not Tabbox.ActiveTab then
                     Tab:Show()
                 end
@@ -13784,12 +13783,12 @@ function Library:CreateWindow(WindowInfo)
             return AddTabbox(self, Info)
         end
 
-        --// Deprecated - Use Tab:AddTabbox instead.
+        
         function Tab:AddLeftTabbox(Name)
             return Tab:AddTabbox({ Side = 1, Name = Name })
         end
 
-        --// Deprecated - Use Tab:AddTabbox instead.
+        
         function Tab:AddRightTabbox(Name)
             return Tab:AddTabbox({ Side = 2, Name = Name })
         end
@@ -14227,12 +14226,12 @@ function Library:CreateWindow(WindowInfo)
             return Groupbox
         end
 
-        --// Deprecated - Use Tab:AddGroupbox instead.
+        
         function Tab:AddLeftGroupbox(Name, IconName, Visible, Collapsed, DisableCollapsing)
             return Tab:AddGroupbox({ Side = 1, Name = Name, IconName = IconName, Visible = Visible, Collapsed = Collapsed, DisableCollapsing = DisableCollapsing })
         end
 
-        --// Deprecated - Use Tab:AddGroupbox instead.
+        
         function Tab:AddRightGroupbox(Name, IconName, Visible, Collapsed, DisableCollapsing)
             return Tab:AddGroupbox({ Side = 2, Name = Name, IconName = IconName, Visible = Visible, Collapsed = Collapsed, DisableCollapsing = DisableCollapsing })
         end
@@ -14510,7 +14509,7 @@ function Library:CreateWindow(WindowInfo)
             Library.Tabs[TabKey] = nil
         end
 
-        --// Execution \\--
+        
         if typeof(Tooltip) == "string" then
             Tab.TooltipTable = Library:AddTooltip(Tooltip, nil, TabButton)
         end
@@ -14644,7 +14643,7 @@ function Library:CreateWindow(WindowInfo)
                 Icon = TabIcon,
             })
 
-            --// Tab Container \\--
+            
             TabContainer = New("ScrollingFrame", {
                 AutomaticCanvasSize = Enum.AutomaticSize.Y,
                 BackgroundTransparency = 1,
@@ -14668,7 +14667,7 @@ function Library:CreateWindow(WindowInfo)
             })
         end
 
-        --// Tab Table \\--
+        
         local Tab = {
             Description = Description,
             IsKeyTab = true,
@@ -14907,7 +14906,7 @@ function Library:CreateWindow(WindowInfo)
             end
         end
 
-        --// Execution \\--
+        
         if typeof(Tooltip) == "string" then
             Tab.TooltipTable = Library:AddTooltip(Tooltip, nil, TabButton)
         end
@@ -15036,7 +15035,7 @@ function Library:CreateWindow(WindowInfo)
                 Icon = TabIcon,
             })
 
-            --// Tab Container \\--
+            
             TabContainer = New("Frame", {
                 BackgroundTransparency = 1,
                 Position = UDim2.fromScale(0, 0),
@@ -15046,7 +15045,7 @@ function Library:CreateWindow(WindowInfo)
             })
         end
 
-        --// Tab Table \\--
+        
         local Tab = {
             Name = Name,
             Description = Description,
@@ -15213,7 +15212,7 @@ function Library:CreateWindow(WindowInfo)
             Library.Tabs[Name] = nil
         end
 
-        --// Execution \\--
+        
         if typeof(Tooltip) == "string" then
             Tab.TooltipTable = Library:AddTooltip(Tooltip, nil, TabButton)
         end
@@ -15922,7 +15921,7 @@ function Library:CreateWindow(WindowInfo)
         end
     end
 
-    --// Execution \\--
+    
     Library:GiveSignal(SearchBox:GetPropertyChangedSignal("Text"):Connect(function()
         Library:UpdateSearch(SearchBox.Text)
     end))
@@ -15933,14 +15932,14 @@ function Library:CreateWindow(WindowInfo)
         end
 
         if Input.KeyCode == Enum.KeyCode.Escape then
-            -- Releasing focus from a text input takes priority and never toggles the window --
+            
             local FocusedBox = UserInputService:GetFocusedTextBox()
             if FocusedBox then
                 FocusedBox:ReleaseFocus()
                 return
             end
 
-            -- Dismiss the topmost dialog before closing any open menu --
+            
             if Library.ActiveDialog and Library.ActiveDialog.OutsideClickDismiss ~= false then
                 Library.ActiveDialog:Dismiss()
                 return
@@ -16004,12 +16003,12 @@ function Library:CreateLoading(LoadingInfo)
         SidebarWidth = LoadingInfo.SidebarWidth,
     }
 
-    --// ScreenGui \\--
+    
     local ScreenGui = New("ScreenGui", {
         Name = RandomGuiName(),
-        -- Roblox localisation translates GuiObject text when the place ships
-        -- translations, so "Miscellaneous" came out as "Diversos" on a pt-br
-        -- client. False on the root disables it for every descendant.
+        
+        
+        
         AutoLocalize = false,
         DisplayOrder = 999,
         ResetOnSpawn = false
@@ -16028,7 +16027,7 @@ function Library:CreateLoading(LoadingInfo)
         end)
     end)
 
-    --// Main Frame \\--
+    
     local MainFrame = New("TextButton", {
         Name = "Main",
         AnchorPoint = Vector2.new(0.5, 0.5),
@@ -16052,7 +16051,7 @@ function Library:CreateLoading(LoadingInfo)
     table.insert(Library.Scales, MainScale)
     Library.ScalesOffset[MainScale] = Library.IsMobile and 0.2 or 0
 
-    --// Layout Containers \\--
+    
     local Container = New("Frame", {
         Name = "Content",
         BackgroundTransparency = 1,
@@ -16084,7 +16083,7 @@ function Library:CreateLoading(LoadingInfo)
         Parent = SideBar,
     })
 
-    --// Top Bar \\--
+    
     local TopBar = New("Frame", {
         Name = "TopBar",
         BackgroundTransparency = 1,
@@ -16149,7 +16148,7 @@ function Library:CreateLoading(LoadingInfo)
         Size = UDim2.new(1, 0, 0, 1),
     })
 
-    --// Loading Content Elements \\--
+    
     local InnerContent = New("Frame", {
         Name = "InnerContent",
         BackgroundTransparency = 1,
@@ -16213,7 +16212,7 @@ function Library:CreateLoading(LoadingInfo)
         Parent = InnerContent,
     })
 
-    --// Progress Bar \\--
+    
     local SliderBar = New("Frame", {
         BackgroundColor3 = "MainColor",
         Size = UDim2.new(0.7, 0, 0, 15),
@@ -16245,7 +16244,7 @@ function Library:CreateLoading(LoadingInfo)
         Parent = ProgressLabel,
     })
 
-    --// Sidebar Object \\--
+    
     local SidebarScrolling = New("ScrollingFrame", {
         BackgroundTransparency = 1,
         BorderSizePixel = 0,
@@ -16294,7 +16293,7 @@ function Library:CreateLoading(LoadingInfo)
     setmetatable(SidebarObject, BaseGroupbox)
     Loading.Sidebar = SidebarObject
 
-    --// Error Frame \\--
+    
     local ErrorFrame = New("Frame", {
         Name = "Error",
         BackgroundTransparency = 1,
@@ -16391,15 +16390,15 @@ function Library:CreateLoading(LoadingInfo)
         end
     end
 
-    --// Content Page \\--
+    
     function Loading:RecalculateLoadingHeight()
         if not Loading.AutoResizeHeight then
             return
         end
 
         local RequiredHeight =
-              49 -- TopBar
-            + 48 -- Padding
+              49 
+            + 48 
             + InnerContent.UIListLayout.AbsoluteContentSize.Y
 
         Loading.WindowHeight = math.max(Loading.BaseWindowHeight, RequiredHeight)
@@ -16472,7 +16471,7 @@ function Library:CreateLoading(LoadingInfo)
         Loading:SetCurrentStep(Loading.CurrentStep)
     end
 
-    --// Size \\--
+    
     function Loading:SetWindowHeight(Height)
         Loading.WindowHeight = Height
         Loading:UpdateLayout()
@@ -16493,13 +16492,13 @@ function Library:CreateLoading(LoadingInfo)
         Loading:UpdateLayout()
     end
 
-    --// Sidebar \\--
+    
     function Loading:ShowSidebarPage(Bool)
         Loading.ShowSidebar = Bool
         Loading:UpdateLayout()
     end
 
-    --// Error Page \\--
+    
     function Loading:ShowErrorPage(Enabled)
         Loading.IsError = Enabled
         InnerContent.Visible = not Enabled
@@ -16520,15 +16519,15 @@ function Library:CreateLoading(LoadingInfo)
 
         local HasButtons = ErrorButtonsHolder.Visible
         local RequiredHeight =
-              49                        -- TopBar
-            + 15                        -- Padding Top
-            + 18                        -- Title Height
-            + 6                         -- Padding between Title and Label
-            + ErrorY                    -- Label Height
-            + 15                        -- Padding between Label and Buttons
-            + (HasButtons and 48 or 0)  -- Buttons Area
+              49                        
+            + 15                        
+            + 18                        
+            + 6                         
+            + ErrorY                    
+            + 15                        
+            + (HasButtons and 48 or 0)  
 
-        Loading.WindowErrorHeight = RequiredHeight -- math.max(Loading.WindowHeight, RequiredHeight)
+        Loading.WindowErrorHeight = RequiredHeight 
     end
 
     function Loading:SetErrorMessage(Text)
@@ -16641,7 +16640,7 @@ function Library:CreateLoading(LoadingInfo)
         Loading:UpdateLayout()
     end
 
-    --// Destroy/Continue \\--
+    
     function Loading:Destroy()
         if RotationTween then
             StopTween(RotationTween, true)
@@ -16704,7 +16703,7 @@ Library:GiveSignal(Teams.ChildRemoved:Connect(OnTeamChange))
 function Library:Unload()
     Library.Unloaded = true
 
-    --// Disconnect connections
+    
     for Index = #Library.Signals, 1, -1 do
         local Connection = table.remove(Library.Signals, Index)
 
@@ -16713,7 +16712,7 @@ function Library:Unload()
         end
     end
 
-    --// Run Unload Callbacks
+    
     for _ = 1, #Library.UnloadSignals do
         local Callback = table.remove(Library.UnloadSignals, 1)
 
@@ -16722,7 +16721,7 @@ function Library:Unload()
         end
     end
 
-    --// Destroy elements
+    
     for Index = #Library.Tabs, 1, -1 do
         local Tab = table.remove(Library.Tabs, Index)
 
@@ -16751,7 +16750,7 @@ function Library:Unload()
         ScreenGui:Destroy()
     end
 
-    --// Clear tables
+    
     table.clear(Library.Registry)
 
     table.clear(Options)
@@ -16804,7 +16803,7 @@ end)
 
 local HttpService: HttpService = cloneref(game:GetService("HttpService"))
 
---// Fix is_____ functions for shitsploits, those functions should never error, only return a boolean. (why is this still a problem in the big 2026)
+
 local isfolder, isfile, listfiles = isfolder, isfile, listfiles
 local isfolder_copy, isfile_copy, listfiles_copy = clonefunction(isfolder), clonefunction(isfile), clonefunction(listfiles)
 local isfolder_success, isfolder_error = pcall(function() return isfolder_copy("test" .. tostring(math.random(1000000, 9999999))) end)
@@ -16826,19 +16825,19 @@ if isfolder_success == false or typeof(isfolder_error) ~= "boolean" then
     end
 end
 
---// WCAG21 constants (https://www.w3.org/TR/WCAG21/#dfn-relative-luminance)
-local ContrastWarnThreshold = 4.5 --// Accessibility: minimum WCAG AA contrast ratio for normal text
-local SrgbLinearThreshold = 0.03928 --// sRGB channel value below which the linear conversion is a simple divide
-local SrgbLinearDivisor = 12.92 --// Divisor used for channel values below SrgbLinearThreshold
-local SrgbGammaOffset = 0.055 --// Offset applied before the gamma expansion power curve
-local SrgbGammaScale = 1.055 --// Scale applied before the gamma expansion power curve
-local SrgbGammaExponent = 2.4 --// Exponent for the gamma expansion power curve
+
+local ContrastWarnThreshold = 4.5 
+local SrgbLinearThreshold = 0.03928 
+local SrgbLinearDivisor = 12.92 
+local SrgbGammaOffset = 0.055 
+local SrgbGammaScale = 1.055 
+local SrgbGammaExponent = 2.4 
 local LuminanceRedWeight,
       LuminanceGreenWeight,
-      LuminanceBlueWeight = 0.2126, 0.7152, 0.0722 --// R, G, B channel weights in the relative luminance formula
-local ContrastRatioOffset = 0.05 --// Offset added to both luminances when computing a contrast ratio
+      LuminanceBlueWeight = 0.2126, 0.7152, 0.0722 
+local ContrastRatioOffset = 0.05 
 
---// Theme Manager
+
 local SchemeIndexes = { "FontColor", "MainColor", "AccentColor", "BackgroundColor", "OutlineColor" }
 
 local ThemeManager = {
@@ -16849,7 +16848,7 @@ local ThemeManager = {
     AppliedToTab = false,
     DefaultThemeName = nil,
 
-    --// Accessibility: contrast warning state
+    
     ContrastLabel = nil,
     ContrastWasPoor = false,
 
@@ -16862,9 +16861,9 @@ local ThemeManager = {
             1,
             { FontColor = "ffffff", MainColor = "131519", AccentColor = "ffffff", BackgroundColor = "0f1112", OutlineColor = "282828", FontFace = "Roboto", BackgroundImage = "" },
         },
-        -- The manager writes its own mutable default slot to BuiltInThemes["Default"]
-        -- in SetDefaultTheme, so the shipped Obsidian look is named "Normal Obsidian"
-        -- to keep the two apart. "Default" is created on demand, never listed here.
+        
+        
+        
         ["Normal Obsidian"] = {
             2,
             { FontColor = "ffffff", MainColor = "191919", AccentColor = "7d55ff", BackgroundColor = "0f0f0f", OutlineColor = "282828", FontFace = "Roboto", BackgroundImage = "" },
@@ -17152,7 +17151,7 @@ function ThemeManager:SetLibrary(Library)
     ThemeManager.Library = Library
 end
 
---// Helpers \\--
+
 local function Trim(Text: string)
     return Text:match("^%s*(.-)%s*$")
 end
@@ -17169,7 +17168,7 @@ local function IsValidFolderPath(Name: string): boolean
     )
 end
 
---// Contrast helpers \\--
+
 local function LinearizeChannel(Channel: number): number
     if Channel <= SrgbLinearThreshold then
         return Channel / SrgbLinearDivisor
@@ -17201,7 +17200,7 @@ local function IsValidThemeData(Data: any): boolean
         return false
     end
 
-    --// Require the color scheme to be present; font/background image are optional and fall back to current values
+    
     for _, SchemeIndex in SchemeIndexes do
         if typeof(Data[SchemeIndex]) ~= "string" then
             return false
@@ -17211,7 +17210,7 @@ local function IsValidThemeData(Data: any): boolean
     return true
 end
 
---// Folder helper \\--
+
 local function SplitPath(Path: string): {string}
 	local Result = {}
 	local Current = ""
@@ -17234,7 +17233,7 @@ end
 
 local GetCurrentThemesPath = GetFolderPath
 
---// Files helper \\--
+
 local function GetThemePath(ThemeName: string): false | string
     local CurrentThemesPath = GetCurrentThemesPath()
     return if CurrentThemesPath == false then false else string.format("%s/%s.json", CurrentThemesPath, ThemeName)
@@ -17254,7 +17253,7 @@ local function GetDefaultThemePath(): false | string
     return if CurrentThemesPath == false then false else string.format("%s/default.txt", CurrentThemesPath)
 end
 
---// Folders \\--
+
 function ThemeManager:GetPaths(): {string}
     local FolderPath = GetFolderPath()
     return if FolderPath == false then {} else SplitPath(FolderPath)
@@ -17292,7 +17291,7 @@ function ThemeManager:SetFolder(Folder: string)
     ThemeManager:BuildFolderTree()
 end
 
---// Theme Management \\--
+
 function ThemeManager:ReloadCustomThemes()
     local SettingsPath = GetCurrentThemesPath()
     if SettingsPath == false then
@@ -17374,7 +17373,7 @@ function ThemeManager:SaveCustomTheme(ThemeName: string): any
 
     ThemeManager:CheckFolderTree()
 
-    --// Custom theme files use the same flat shape as an exported theme JSON, so reuse the encoder
+    
     local EncodedData, SuccessEncode, EncodeErrorMessage = ThemeManager:SaveJSON()
     if not SuccessEncode then
         return false, EncodeErrorMessage
@@ -17410,7 +17409,7 @@ function ThemeManager:Delete(ThemeName: string): (boolean | string?)
     return true
 end
 
---// Default Theme \\--
+
 function ThemeManager:GetDefaultTheme(): (string, boolean, string?)
     ThemeManager:CheckFolderTree()
 
@@ -17466,7 +17465,7 @@ function ThemeManager:SetDefaultTheme(Theme: any)
         end
     end
 
-    --// Font
+    
     local FontFace = Theme["FontFace"]
     local FontFaceType = typeof(FontFace)
     
@@ -17483,12 +17482,12 @@ function ThemeManager:SetDefaultTheme(Theme: any)
         FinalTheme.FontFace = "Roboto"
     end
 
-    --// Default Scheme Colors
+    
     for _, DefaultSchemeColor in { "RedColor", "DestructiveColor", "DarkColor", "WhiteColor" } do
         LibraryScheme[DefaultSchemeColor] = Library.Scheme[DefaultSchemeColor]
     end
 
-    --// Apply
+    
     Library.Scheme = LibraryScheme
     ThemeManager.BuiltInThemes["Default"] = { 1, FinalTheme }
 
@@ -17526,7 +17525,7 @@ function ThemeManager:LoadDefault()
         if FetchErrorMessage ~= "Default theme is not set" then
             ThemeManager.Library:Notify(string.format("Failed to apply default theme: %s", FetchErrorMessage))
         else
-            -- No user default saved: fall back to Halloween!!, the out-of-box theme.
+            
             pcall(function()
                 ThemeManager.Library.Options.ThemeManager_ThemeList:SetValue("Halloween!!")
             end)
@@ -17570,7 +17569,7 @@ function ThemeManager:DeleteDefaultTheme(): (boolean, string?)
     return true
 end
 
---// Accessibility: contrast checking \\--
+
 function ThemeManager:GetContrastReport(): { Ratio: number, PairName: string, Passes: boolean }
     local Library = ThemeManager.Library
     local FontColorOption = Library.Options.FontColor
@@ -17646,7 +17645,7 @@ function ThemeManager:UpdateContrastWarning()
     ThemeManager.ContrastWasPoor = not Report.Passes
 end
 
---// Apply Theme \\--
+
 function ThemeManager:ThemeUpdate()
     local Library = ThemeManager.Library
 
@@ -17661,8 +17660,8 @@ function ThemeManager:ThemeUpdate()
     ThemeManager:UpdateContrastWarning()
 end
 
---// Applies a flat theme data table (either a parsed theme file or an imported JSON blob) to the library.
---// Split out of ApplyTheme so imported JSON can go through the same path as themes loaded from disk.
+
+
 function ThemeManager:ApplyThemeData(ThemeData: any): (boolean, string?)
     if typeof(ThemeData) ~= "table" then
         return false, "Invalid theme data"
@@ -17694,7 +17693,7 @@ function ThemeManager:ApplyThemeData(ThemeData: any): (boolean, string?)
             Library.Scheme[Index] = FinalValue
 
         else
-            continue --// Unrecognized field, ignore it
+            continue 
         end
 
         if Element then
@@ -17722,7 +17721,7 @@ function ThemeManager:ApplyTheme(ThemeName: string)
     return ThemeManager:ApplyThemeData(ThemeData)
 end
 
---// JSON Import & Export \\--
+
 function ThemeManager:SaveJSON(): (string, boolean, string?)
     local ThemeData = BuildCurrentThemeData()
 
@@ -17747,7 +17746,7 @@ function ThemeManager:LoadJSON(Content: string): (boolean, string?)
     return ThemeManager:ApplyThemeData(Decoded)
 end
 
---// GUI \\--
+
 local function ShowDialog(
     Condition: () -> boolean,
 
@@ -17831,7 +17830,7 @@ function ThemeManager:CreateThemeManager(Themesbox: any)
     local OutlineColor = CreateColorOption("Outline color", "OutlineColor")
     local FontColor = CreateColorOption("Font color", "FontColor")
 
-    --// Accessibility: live contrast readout for the colors above
+    
     ThemeManager.ContrastLabel = Themesbox:AddLabel({
         Text = "Contrast check: n/a",
         DoesWrap = true,
@@ -18088,7 +18087,7 @@ function ThemeManager:CreateThemeManager(Themesbox: any)
 
     Themesbox:AddDivider()
 
-    --// Import & Export
+    
     Themesbox:AddInput("ThemeManager_ThemeJSON", {
         Text = "Theme JSON"
     })
@@ -18136,7 +18135,7 @@ function ThemeManager:CreateThemeManager(Themesbox: any)
         end
     end)
 
-    --// Set Variables
+    
     CustomThemeList, CustomThemeName, ThemeList, FontFace, BackgroundImage, ThemeJSONInput =
         ThemeManager.Library.Options.ThemeManager_CustomThemeList,
         ThemeManager.Library.Options.ThemeManager_CustomThemeName,
@@ -18145,7 +18144,7 @@ function ThemeManager:CreateThemeManager(Themesbox: any)
         ThemeManager.Library.Options.BackgroundImage,
         ThemeManager.Library.Options.ThemeManager_ThemeJSON;
 
-    --// Handlers
+    
     ThemeList:OnChanged(function()
         ThemeManager:ApplyTheme(ThemeList.Value)
     end)
@@ -18162,7 +18161,7 @@ function ThemeManager:CreateThemeManager(Themesbox: any)
     FontFace:OnChanged(function(Value) ThemeManager.Library:SetFont(Enum.Font[Value]) end)
     BackgroundImage:OnChanged(function(Value) ThemeManager.Library:SetBackgroundImage(Value) end)
 
-    --// Load default
+    
     ThemeManager:LoadDefault()
     ThemeManager:UpdateContrastWarning()
     ThemeManager.AppliedToTab = true
@@ -18202,7 +18201,7 @@ end)
 
 local HttpService: HttpService = cloneref(game:GetService("HttpService"))
 
---// Fix is_____ functions for shitsploits, those functions should never error, only return a boolean. (why is this still a problem in the big 2026)
+
 local isfolder, isfile, listfiles = isfolder, isfile, listfiles
 local isfolder_copy, isfile_copy, listfiles_copy = clonefunction(isfolder), clonefunction(isfile), clonefunction(listfiles)
 local isfolder_success, isfolder_error = pcall(function() return isfolder_copy("test" .. tostring(math.random(1000000, 9999999))) end)
@@ -18224,7 +18223,7 @@ if isfolder_success == false or typeof(isfolder_error) ~= "boolean" then
     end
 end
 
---// Save Manager
+
 local SaveManager = {
     Library = nil,
 
@@ -18242,7 +18241,7 @@ function SaveManager:SetLibrary(Library)
     SaveManager.Library = Library
 end
 
---// Element Parser \\--
+
 local SpecialValueParser = {
     UDim2 = {
         Encode = function(Value: UDim2)
@@ -18410,12 +18409,12 @@ local ElementParser = {}; do
             local Groupbox = Tab.Groupboxes[Index]
             if not Groupbox then return end
 
-            --// Collapsed
+            
             if Groupbox.Collapsed ~= Data.collapsed then
                 Groupbox:SetCollapsed(Data.collapsed == true)
             end
 
-            --// Popout
+            
             if Groupbox.PopOutEnabled then
                 if Data.poppedOut == true then
                     local Position = SpecialValueParser.UDim2.Decode(Data.popoutPos)
@@ -18448,7 +18447,7 @@ local ElementParser = {}; do
             local Tabbox = Tab.Tabboxes and Tab.Tabboxes[Index]
             if not Tabbox then return end
 
-            --// Popout
+            
             if Tabbox.PopOutEnabled then
                 if Data.poppedOut == true then
                     local Position = SpecialValueParser.UDim2.Decode(Data.popoutPos)
@@ -18462,7 +18461,7 @@ local ElementParser = {}; do
     )
 end
 
---// Helpers \\--
+
 local function Trim(Text: string)
     return Text:match("^%s*(.-)%s*$")
 end
@@ -18479,7 +18478,7 @@ local function IsValidFolderPath(Name: string): boolean
     )
 end
 
---// Folder helper \\--
+
 local function SplitPath(Path: string): {string}
     local Result = {}
     local Current = ""
@@ -18513,7 +18512,7 @@ local function GetCurrentSettingsPath(): false | string
     return if SubFolderPath == false then GetFolderPath() else SubFolderPath
 end
 
---// Files helper \\--
+
 local function GetConfigPath(ConfigName: string): false | string
     local CurrentSettingsPath = GetCurrentSettingsPath()
     return if CurrentSettingsPath == false then false else string.format("%s/%s.json", CurrentSettingsPath, ConfigName)
@@ -18529,7 +18528,7 @@ local function GetAutoloadPath(): false | string
     return if CurrentSettingsPath == false then false else string.format("%s/autoload.txt", CurrentSettingsPath)
 end
 
---// Indexes \\--
+
 function SaveManager:SetLoadingOrder(Enabled: boolean, Order: {string}?)
     SaveManager.UseLoadingOrder = Enabled == true
     SaveManager.LoadingOrder = typeof(Order) == "table" and Order or SaveManager.LoadingOrder
@@ -18550,7 +18549,7 @@ function SaveManager:IgnoreThemeSettings()
     })
 end
 
---// Folders \\--
+
 function SaveManager:GetPaths(): {string}
     local SubFolderPath = GetSubFolderPath()
     if SubFolderPath == false then
@@ -18615,7 +18614,7 @@ function SaveManager:SetSubFolder(SubFolder: string)
     SaveManager:BuildFolderTree()
 end
 
---// Config Management \\--
+
 function SaveManager:RefreshConfigList()
     local SettingsPath = GetCurrentSettingsPath()
     if SettingsPath == false then
@@ -18679,7 +18678,7 @@ function SaveManager:SaveJSON(ConfigName)
         }
     end
 
-    --// Toggles
+    
     for Index, Toggle in Library.Toggles do
         if not Toggle.Type then continue end
         if IgnoreIndexes[Index] then continue end
@@ -18690,7 +18689,7 @@ function SaveManager:SaveJSON(ConfigName)
         table.insert(CurrentData.objects, Parser.Save(Index, Toggle))
     end
 
-    --// Options
+    
     for Index, Option in Library.Options do
         if not Option.Type then continue end
         if IgnoreIndexes[Index] then continue end
@@ -18701,7 +18700,7 @@ function SaveManager:SaveJSON(ConfigName)
         table.insert(CurrentData.objects, Parser.Save(Index, Option))
     end
 
-    --// Groupboxes, Tabboxes
+    
     for TabIndex, Tab in Library.Tabs do
         if Tab.Groupboxes then
             for Index, Groupbox in Tab.Groupboxes do
@@ -18785,7 +18784,7 @@ function SaveManager:LoadJSON(Content: string)
         end)
     end
 
-    --// Keybind Menu
+    
     if Library.KeybindFrame and typeof(Decoded.keybindMenu) == "table" then
         local KeybindFrameData = Decoded.keybindMenu
         local IsVisible = KeybindFrameData.visible == true
@@ -18823,7 +18822,7 @@ function SaveManager:LoadJSON(Content: string)
         end
     end
 
-    --// Elements
+    
     for _, Option in Decoded.objects do
         if not Option.type then continue end
         if IgnoreIndexes[Option.idx] then continue end
@@ -18877,7 +18876,7 @@ function SaveManager:Delete(ConfigName: string): (boolean | string?)
     return true
 end
 
---// Auto Load Config \\--
+
 function SaveManager:GetAutoloadConfig(): (string, boolean, string?)
     SaveManager:CheckFolderTree()
 
@@ -18969,7 +18968,7 @@ function SaveManager:DeleteAutoLoadConfig(): (boolean, string?)
     return true
 end
 
---// GUI \\--
+
 local function ShowDialog(
     Condition: () -> boolean,
 
@@ -19033,7 +19032,7 @@ function SaveManager:BuildConfigSection(Tab: any, IconName: string)
         if ConfigList then RefreshList() end
     end
 
-    --// Create
+    
     ConfigurationBox:AddInput("SaveManager_ConfigName", {
         Text = "Config name"
     })
@@ -19075,7 +19074,7 @@ function SaveManager:BuildConfigSection(Tab: any, IconName: string)
 
     ConfigurationBox:AddDivider()
 
-    --// Manage
+    
     ConfigurationBox:AddDropdown("SaveManager_ConfigList", {
         Text = "Config list",
 
@@ -19112,7 +19111,7 @@ function SaveManager:BuildConfigSection(Tab: any, IconName: string)
 
             ShowDialog(
                 function(): boolean
-                    return true --// Always show
+                    return true 
                 end,
 
                 "SaveManager_LoadConfig",
@@ -19146,7 +19145,7 @@ function SaveManager:BuildConfigSection(Tab: any, IconName: string)
 
             ShowDialog(
                 function(): boolean
-                    return true --// Always show
+                    return true 
                 end,
 
                 "SaveManager_OverwriteConfig",
@@ -19180,7 +19179,7 @@ function SaveManager:BuildConfigSection(Tab: any, IconName: string)
 
             ShowDialog(
                 function(): boolean
-                    return true --// Always show
+                    return true 
                 end,
 
                 "SaveManager_DeleteConfig",
@@ -19204,7 +19203,7 @@ function SaveManager:BuildConfigSection(Tab: any, IconName: string)
 
     ConfigurationBox:AddButton("Refresh list", RefreshList)
 
-    --// Autoload Config
+    
     ConfigurationBox:AddButton({
         Text = "Set as autoload",
         DoubleClick = false,
@@ -19234,7 +19233,7 @@ function SaveManager:BuildConfigSection(Tab: any, IconName: string)
         Func = function()
             ShowDialog(
                 function(): boolean
-                    return true --// Always show
+                    return true 
                 end,
 
                 "SaveManager_ResetAutoload",
@@ -19260,7 +19259,7 @@ function SaveManager:BuildConfigSection(Tab: any, IconName: string)
 
     ConfigurationBox:AddDivider()
 
-    --// Import & Export
+    
     ConfigurationBox:AddInput("SaveManager_JSON", {
         Text = "Config JSON"
     })
@@ -19274,7 +19273,7 @@ function SaveManager:BuildConfigSection(Tab: any, IconName: string)
 
         ShowDialog(
             function(): boolean
-                return true --// Always show
+                return true 
             end,
 
             "SaveManager_ImportConfig",
@@ -19308,13 +19307,13 @@ function SaveManager:BuildConfigSection(Tab: any, IconName: string)
         end
     end)
 
-    --// Set variables
+    
     ConfigNameInput, ConfigList, ConfigJSONInput =
         SaveManager.Library.Options.SaveManager_ConfigName, 
         SaveManager.Library.Options.SaveManager_ConfigList,
         SaveManager.Library.Options.SaveManager_JSON;
 
-    --// Refresh
+    
     RefreshAutoloadConfigLabel()
     SaveManager:SetIgnoreIndexes({ "SaveManager_ConfigList", "SaveManager_ConfigName", "SaveManager_JSON" })
 
@@ -19840,7 +19839,7 @@ function XJWUI:CreateWindow(opts)
 	return win
 end
 
--- ===== 界面资产：背景立绘 / 描边柔化 / 设置页（随库下发，业务脚本不再持有） =====
+
 local XJW_BACKGROUND_SCALE = Enum.ScaleType.Crop
 
 local function xjwFixBackgroundAspect()
@@ -20040,12 +20039,6 @@ function XJWUI:BuildSettingsTab(tab, opts)
 	if type(tab) ~= "table" then return nil end
 	local d = self.Defaults
 	local Folder = tostring(opts.Folder or d.ConfigFolder or "Revenant")
-	local InfoText = tostring(opts.InfoText or d.InfoText or "基于TSB无延迟UI 改造")
-
-	pcall(function()
-		tab:AddLeftGroupbox("信息", "settings"):AddLabel(InfoText)
-	end)
-
 	local ThemeManager = Library.ThemeManager
 	local SaveManager = Library.SaveManager
 
@@ -20066,6 +20059,30 @@ function XJWUI:BuildSettingsTab(tab, opts)
 		end)
 	end
 
+	pcall(function()
+		local floatBox = tab:AddLeftGroupbox("悬浮窗", "settings")
+		local currentStyle = "横向悬浮条"
+		if self.FloatStyle == "orb" then
+			currentStyle = "可拖动浮球"
+		elseif self.FloatStyle == "off" then
+			currentStyle = "隐藏"
+		end
+		floatBox:AddDropdown("XJWFloatStyle", {
+			Text = "悬浮窗样式",
+			Values = {"横向悬浮条", "可拖动浮球", "隐藏"},
+			Default = currentStyle,
+			AllowNull = false,
+			Multi = false,
+			Tooltip = "横向悬浮条为横排胶囊，可拖动浮球为圆形浮标，两者都可拖到任意位置",
+			Callback = function(value)
+				self:SetFloatStyle(value)
+			end,
+		})
+		floatBox:AddLabel("悬浮窗文字为 XJW，配色取自金色主题")
+	end)
+	pcall(function()
+		self:SetFloatStyle(self.FloatStyle or "bar")
+	end)
 	task.defer(function() self:InstallBackgroundDropdown(tab, opts) end)
 	return tab
 end
@@ -20083,7 +20100,7 @@ end
 
 
 
--- ===== 内置图标兜底：lucide 白描边 PNG 直接打包进库，断网/源失效也能显示 =====
+
 local XJW_ICON_B64 = {
 	["house"] = "iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAADJElEQVR42sWXv1sUURDHv3N7l4DGGEE4sRGrgIWlgloIQhrLNJJGCQELiQpaqH+BpcF0gsS/wFR2YqWFoJB0QkCsRAwJqMTc5fY+Fs6Tcd277F0UB46d3Zn3nXnz672TKhJQA+oV9OpArSquVTS+z8y2nL8v6ZCklqQRV2lLGpW0aWZ3imv1RMCIPyeAG+xON4CJuHZYwxb4MeC6G+gAW0AejOb+rePv14GxMqyBdg5kzi8AX4PBnZKdx29fgQVfm1WOBGBueDx8WwQ2HXgb+Ob8GnDJf2v+7Zvr4GsWA864Y1s/47XwPgFcC7vaALrOvwHmgu6cf8N1NsK6a6kmQjdZv3wfBZrAfAhtzPdnYMp19wP7nZ9yWayLlJZ5xzxaWhfAaMj7KvAxgLUDaAs46XnNPGoW3k+6DoW1nx1zNXTVaBwcGXAOWC4U1nd/PvJcTxfbs4Sfdt1HBYxEy24rA+px91dDyNdD2JeBycKky0pqKIuTEpgMG8odM6Xk6q8ohJDMhJC1vKdXgvwA0Ei5K9SNhUJuAAdCSlccqxXSMpPkcWbXJDWcH5H0XNIFM2t7d6SxWgca6Rl5SSkCW0DNzNqSLjhWSlPDbf0ECw7kgX8oacnM1n13ZmZ5QWe3mZIB5hh3Jb2TNF+0FR0g8E/N7K2HcsvMcuCYpDMu7/Swm/BemdkHd2KfYx0MDlDmQKSmF1pLUuYen5e0VDEAVyQ98bUtx2qWKfY6t3MPuXqkaDf6Tbdf+uoDgLZC6B9Ieh3WdySdknQz6Fai+oCHZNJ/ZmYvCkW3Lum2hgQclJredvFG1BwGaFgHcjPbSQPI+XwYoJr+M/VyICub93u43mXekpUd2PbWsao35z637jRFtwepgXaY2wK6hR1kXoRJTj+5t2V7NwciwD3giJk9DmH8FOSfzGxH0k4VOTArabbMVjECadCclXQI+BJCeTrILwKHC4OoTJ5m/i1JJ0rPkHDeXw63li5/nyLm5bL7QDboX7YhCvIPW+YXhy5w3EOfjkskdQsAWThsKDHQS14rdNRLM3s/yJ/Yf0bxXlfbw2gelDpm1pWkH8hGXjNeDAZbAAAAAElFTkSuQmCC",
 	["user"] = "iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAACoUlEQVR42sWXvWoUURTHf2dnds1oIiLiB4RgY0qFYKGFbcqEvIFYKXkIS20tRCWkygNIwBewMoV5giDYaQwxFgmazc7+bc6V67i7c2d3wQOXveycrzmf/zEakCQDcsCGsQA9MxPTJkktSXkCXy6plarXEo13zKzr9zXgAtDzaBDdT8zsbVVm0jc3SZmf25JONZxOnSfw2zQcaPvvsqQD1dOBpOVYdlzDWZT7dUm7bqAcYTw823WZVqxrEOV19WFmfUmrwBJwApwHPgCfgVBsfeAmcM95loBDM3vZpNb+qeboviWpF73pygD+leh5T9LWIF1VSm2XzE+gzgCezgh+xknBKJqTNAuEIjsD5sZRlOpA6Se81b6ZHVdSsD+Af2oOzLhxeUEtSLoWhb0LLETjOHOZqTkQDP30LngOPI2qW0BR4elMPAGj2X5f0qZX+NmIORCebbpMHusa15GgZFHSdsIk3Ja0WNd+TZfRrJkdS+oAH4GrwK8oz+H+DbhrZt0gM7EDPs/Nq7oP3KgUJNG9BL74fMkAmdnZ2LsgJYSJ+CBrFIHK/l+N9n+W0Dk9j0TAB9uN8EHD/V9HzfHBGPt/InwQb7zMzEqglLQOPAKueOHFS+sx8N0HTTcaVF3gMvA64u27jmeSbgGvKrb+yuew/X8OeA98BX6Y2ZuaCN4BLgHXgQc+GevxQc3+X6t0R3vIySK+tRR8kCfu/+JPmDxNCR1YpOCDYYAkDI9D4AmwI6lIAZkeiQLYcdnDis4kCLbhi2Uv+q9oMHyK6L7nujYG2WqN2P85cFHSvKNbNRuAakmaBy66rpkmKWhHjpRm1m+IbM1lyshwuw6QxIX1AnjnbXgUoZ5UCrxHwEMf5Z+G2Pq/ZCMKsjXp53blc75vZr0qz2/IUD9XO95+1gAAAABJRU5ErkJggg==",
@@ -20194,7 +20211,7 @@ function Library:GetBundledIcon(Name)
 	return nil
 end
 
--- 图标模块（lucide-roblox-direct）源已失效时自动回落到库内自带图标
+
 if type(Library.GetCustomIcon) == "function" and not Library.__XJWIconPatched then
 	Library.__XJWIconPatched = true
 	local RawGetCustomIcon = Library.GetCustomIcon
@@ -20206,7 +20223,351 @@ if type(Library.GetCustomIcon) == "function" and not Library.__XJWIconPatched th
 	end
 end
 
--- ===== 原生接口与扩展接口合并到同一张表，加载后直接就是完整 UI 库 =====
+
+XJWUI.FloatStyle = "bar"
+XJWUI.FloatGui = nil
+XJWUI.FloatScreen = nil
+XJWUI.FloatUnloadHooked = false
+XJWUI.FloatConnections = {}
+XJWUI.FloatPositions = {}
+
+local XJW_GOLD = Color3.fromRGB(245, 197, 66)
+local XJW_GOLD_LIGHT = Color3.fromRGB(255, 233, 168)
+local XJW_GOLD_DEEP = Color3.fromRGB(168, 118, 10)
+local XJW_INK = Color3.fromRGB(24, 18, 7)
+local XJW_FLOAT_LABEL = {bar = "横向悬浮条", orb = "可拖动浮球", off = "隐藏"}
+local XJW_FLOAT_KEY = {
+	["横向悬浮条"] = "bar",
+	["可拖动浮球"] = "orb",
+	["隐藏"] = "off",
+	bar = "bar",
+	orb = "orb",
+	off = "off",
+	horizontal = "bar",
+	draggable = "orb",
+	none = "off",
+}
+
+local function XJWFloatReset()
+	if XJWUI.FloatGui then
+		pcall(function()
+			XJWUI.FloatGui:Destroy()
+		end)
+		XJWUI.FloatGui = nil
+	end
+	for _, connection in ipairs(XJWUI.FloatConnections) do
+		pcall(function()
+			connection:Disconnect()
+		end)
+	end
+	XJWUI.FloatConnections = {}
+end
+
+local function XJWFloatGoldStroke(target, thickness, transparency)
+	local stroke = Instance.new("UIStroke")
+	stroke.Color = XJW_GOLD
+	stroke.Thickness = thickness
+	stroke.Transparency = transparency
+	stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+	stroke.Parent = target
+	local gradient = Instance.new("UIGradient")
+	gradient.Color = ColorSequence.new({
+		ColorSequenceKeypoint.new(0, XJW_GOLD_LIGHT),
+		ColorSequenceKeypoint.new(0.5, XJW_GOLD),
+		ColorSequenceKeypoint.new(1, XJW_GOLD_DEEP),
+	})
+	gradient.Rotation = 20
+	gradient.Parent = stroke
+	return stroke
+end
+
+local function XJWFloatDraggable(frame, onClick)
+	local pressPosition, startOffset, dragging, moved
+	local function bind(signal, handler)
+		table.insert(XJWUI.FloatConnections, signal:Connect(handler))
+	end
+	bind(frame.InputBegan, function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+			dragging = true
+			moved = false
+			pressPosition = input.Position
+			startOffset = Vector2.new(frame.Position.X.Offset, frame.Position.Y.Offset)
+		end
+	end)
+	bind(UIS.InputChanged, function(input)
+		if not dragging or not pressPosition then
+			return
+		end
+		if input.UserInputType ~= Enum.UserInputType.MouseMovement and input.UserInputType ~= Enum.UserInputType.Touch then
+			return
+		end
+		local delta = input.Position - pressPosition
+		if delta.Magnitude > 6 then
+			moved = true
+		end
+		if moved then
+			frame.Position = UDim2.new(frame.Position.X.Scale, startOffset.X + delta.X, frame.Position.Y.Scale, startOffset.Y + delta.Y)
+		end
+	end)
+	bind(UIS.InputEnded, function(input)
+		if input.UserInputType ~= Enum.UserInputType.MouseButton1 and input.UserInputType ~= Enum.UserInputType.Touch then
+			return
+		end
+		if not dragging then
+			return
+		end
+		dragging = false
+		pressPosition = nil
+		if not moved and onClick then
+			pcall(onClick)
+		end
+	end)
+end
+
+local function XJWFloatContainer()
+	if XJWUI.FloatScreen and XJWUI.FloatScreen.Parent then
+		return XJWUI.FloatScreen
+	end
+	local parent = nil
+	pcall(function()
+		parent = LocalPlayer:WaitForChild("PlayerGui")
+	end)
+	if not parent then
+		pcall(function()
+			parent = game:GetService("CoreGui")
+		end)
+	end
+	if not parent then
+		return nil
+	end
+	local screen = Instance.new("ScreenGui")
+	screen.Name = "XJWFloatGui"
+	screen.ResetOnSpawn = false
+	screen.IgnoreGuiInset = true
+	screen.DisplayOrder = 999999
+	screen.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+	screen.Parent = parent
+	XJWUI.FloatScreen = screen
+	return screen
+end
+
+function XJWUI:InstallFloat(style)
+	style = XJW_FLOAT_KEY[style] or "bar"
+	self.FloatStyle = style
+	XJWFloatReset()
+	local holder = XJWFloatContainer()
+	if not holder then
+		holder = Library.Floats
+	end
+	if not holder then
+		return false
+	end
+	if not self.FloatUnloadHooked and type(Library.OnUnload) == "function" then
+		self.FloatUnloadHooked = true
+		pcall(function()
+			Library:OnUnload(function()
+				XJWFloatReset()
+				if XJWUI.FloatScreen then
+					pcall(function()
+						XJWUI.FloatScreen:Destroy()
+					end)
+					XJWUI.FloatScreen = nil
+				end
+			end)
+		end)
+	end
+	local nativeHolder = Library.Floats or holder
+	local function toggleWindow()
+		pcall(function()
+			Library:Toggle()
+		end)
+	end
+	local function hideNativeButtons()
+		pcall(function()
+			for _, child in ipairs(nativeHolder:GetChildren()) do
+				if child:IsA("TextButton") and (child.Text == "Toggle" or child.Text == "Lock") then
+					child.Visible = false
+				end
+			end
+		end)
+	end
+	if style == "off" then
+		pcall(function()
+			for _, child in ipairs(nativeHolder:GetChildren()) do
+				if child:IsA("TextButton") and (child.Text == "Toggle" or child.Text == "Lock") then
+					child.Visible = true
+				end
+			end
+		end)
+		return true
+	end
+	hideNativeButtons()
+	local savedPosition = self.FloatPositions[style]
+	if style == "orb" then
+		local orb = Instance.new("Frame")
+		orb.Name = "XJWFloatOrb"
+		orb.AnchorPoint = Vector2.new(0.5, 0.5)
+		orb.Position = savedPosition or UDim2.new(0, 56, 0.5, 0)
+		orb.Size = UDim2.fromOffset(64, 64)
+		orb.BackgroundColor3 = XJW_INK
+		orb.BackgroundTransparency = 0.05
+		orb.BorderSizePixel = 0
+		orb.ZIndex = 61
+		orb.Parent = holder
+		local orbCorner = Instance.new("UICorner")
+		orbCorner.CornerRadius = UDim.new(1, 0)
+		orbCorner.Parent = orb
+		XJWFloatGoldStroke(orb, 2, 0.08)
+		local glow = Instance.new("Frame")
+		glow.Name = "Glow"
+		glow.AnchorPoint = Vector2.new(0.5, 0.5)
+		glow.Position = UDim2.fromScale(0.5, 0.5)
+		glow.Size = UDim2.fromScale(1, 1)
+		glow.BackgroundTransparency = 1
+		glow.ZIndex = 60
+		glow.Parent = orb
+		local glowCorner = Instance.new("UICorner")
+		glowCorner.CornerRadius = UDim.new(1, 0)
+		glowCorner.Parent = glow
+		local glowStroke = XJWFloatGoldStroke(glow, 3, 0.45)
+		local brand = Instance.new("TextLabel")
+		brand.BackgroundTransparency = 1
+		brand.Size = UDim2.fromScale(1, 1)
+		brand.Font = Enum.Font.GothamBold
+		brand.Text = "XJW"
+		brand.TextSize = 15
+		brand.TextColor3 = XJW_GOLD_LIGHT
+		brand.ZIndex = 62
+		brand.Parent = orb
+		local brandStroke = Instance.new("UIStroke")
+		brandStroke.Color = XJW_GOLD_DEEP
+		brandStroke.Thickness = 1
+		brandStroke.Transparency = 0.35
+		brandStroke.Parent = brand
+		task.spawn(function()
+			while orb.Parent do
+				local wave = (math.sin(os.clock() * 2.6) + 1) * 0.5
+				glowStroke.Transparency = 0.35 + wave * 0.4
+				glow.Size = UDim2.fromScale(1 + wave * 0.14, 1 + wave * 0.14)
+				task.wait(0.05)
+			end
+		end)
+		XJWFloatDraggable(orb, toggleWindow)
+		self.FloatGui = orb
+	else
+		local bar = Instance.new("Frame")
+		bar.Name = "XJWFloatBar"
+		bar.AnchorPoint = Vector2.new(0, 0.5)
+		bar.Position = savedPosition or UDim2.new(0, 16, 0.5, 0)
+		bar.Size = UDim2.fromOffset(168, 46)
+		bar.BackgroundColor3 = XJW_INK
+		bar.BackgroundTransparency = 0.1
+		bar.BorderSizePixel = 0
+		bar.ZIndex = 61
+		bar.Parent = holder
+		local barCorner = Instance.new("UICorner")
+		barCorner.CornerRadius = UDim.new(1, 0)
+		barCorner.Parent = bar
+		local barStroke = XJWFloatGoldStroke(bar, 1.6, 0.1)
+		local shade = Instance.new("UIGradient")
+		shade.Color = ColorSequence.new({
+			ColorSequenceKeypoint.new(0, Color3.fromRGB(46, 34, 12)),
+			ColorSequenceKeypoint.new(1, Color3.fromRGB(14, 10, 4)),
+		})
+		shade.Rotation = 90
+		shade.Parent = bar
+		local brand = Instance.new("TextLabel")
+		brand.BackgroundTransparency = 1
+		brand.Position = UDim2.fromOffset(18, 0)
+		brand.Size = UDim2.fromOffset(56, 46)
+		brand.Font = Enum.Font.GothamBold
+		brand.Text = "XJW"
+		brand.TextSize = 20
+		brand.TextColor3 = XJW_GOLD_LIGHT
+		brand.TextXAlignment = Enum.TextXAlignment.Left
+		brand.ZIndex = 62
+		brand.Parent = bar
+		local brandStroke = Instance.new("UIStroke")
+		brandStroke.Color = XJW_GOLD_DEEP
+		brandStroke.Thickness = 1
+		brandStroke.Transparency = 0.35
+		brandStroke.Parent = brand
+		local divider = Instance.new("Frame")
+		divider.BackgroundColor3 = XJW_GOLD
+		divider.BackgroundTransparency = 0.55
+		divider.BorderSizePixel = 0
+		divider.Position = UDim2.fromOffset(76, 13)
+		divider.Size = UDim2.new(0, 1, 0, 20)
+		divider.ZIndex = 62
+		divider.Parent = bar
+		local hint = Instance.new("TextLabel")
+		hint.BackgroundTransparency = 1
+		hint.Position = UDim2.fromOffset(86, 0)
+		hint.Size = UDim2.new(1, -110, 1, 0)
+		hint.Font = Enum.Font.GothamMedium
+		hint.Text = "展开面板"
+		hint.TextSize = 13
+		hint.TextColor3 = XJW_GOLD
+		hint.TextXAlignment = Enum.TextXAlignment.Left
+		hint.ZIndex = 62
+		hint.Parent = bar
+		local dot = Instance.new("Frame")
+		dot.AnchorPoint = Vector2.new(1, 0.5)
+		dot.Position = UDim2.new(1, -16, 0.5, 0)
+		dot.Size = UDim2.fromOffset(8, 8)
+		dot.BackgroundColor3 = XJW_GOLD_LIGHT
+		dot.BorderSizePixel = 0
+		dot.ZIndex = 62
+		dot.Parent = bar
+		local dotCorner = Instance.new("UICorner")
+		dotCorner.CornerRadius = UDim.new(1, 0)
+		dotCorner.Parent = dot
+		task.spawn(function()
+			while bar.Parent do
+				local wave = (math.sin(os.clock() * 3) + 1) * 0.5
+				barStroke.Transparency = 0.05 + wave * 0.3
+				dot.BackgroundTransparency = wave * 0.5
+				task.wait(0.05)
+			end
+		end)
+		XJWFloatDraggable(bar, function()
+			toggleWindow()
+			local opened = false
+			pcall(function()
+				opened = Library.Toggled == true
+			end)
+			hint.Text = opened and "收起面板" or "展开面板"
+		end)
+		self.FloatGui = bar
+	end
+	self.FloatPositions[style] = self.FloatGui.Position
+	table.insert(self.FloatConnections, UIS.InputEnded:Connect(function()
+		if self.FloatGui then
+			self.FloatPositions[style] = self.FloatGui.Position
+		end
+	end))
+	return true
+end
+
+function XJWUI:SetFloatStyle(style)
+	local key = XJW_FLOAT_KEY[style] or style
+	if key ~= "bar" and key ~= "orb" and key ~= "off" then
+		key = "bar"
+	end
+	self:InstallFloat(key)
+	return XJW_FLOAT_LABEL[key] or "横向悬浮条"
+end
+
+function XJWUI:GetFloatStyle()
+	return XJW_FLOAT_LABEL[self.FloatStyle or "bar"] or "横向悬浮条"
+end
+
+task.defer(function()
+	pcall(function()
+		XJWUI:InstallFloat(XJWUI.FloatStyle or "bar")
+	end)
+end)
+
 Library.__XJWCreateWindowRaw = Library.__XJWCreateWindowRaw or Library.CreateWindow
 
 Library.XJWUI = XJWUI
@@ -20232,14 +20593,17 @@ Library.SoftenOuterBorder = XJWUI.SoftenOuterBorder
 Library.InstallBackground = XJWUI.InstallBackground
 Library.InstallBackgroundDropdown = XJWUI.InstallBackgroundDropdown
 Library.BuildSettingsTab = XJWUI.BuildSettingsTab
+Library.InstallFloat = XJWUI.InstallFloat
+Library.SetFloatStyle = XJWUI.SetFloatStyle
+Library.GetFloatStyle = XJWUI.GetFloatStyle
 
--- CreateWindow 走默认参数合并版（原生实现保留在 __XJWCreateWindowRaw）
+
 Library.CreateWindow = function(self, opts)
 	return XJWUI:CreateWindow(opts)
 end
 
--- 透明代理：库表缺失的成员（Notify / Toggles / ScreenGui / Scheme / TabButtons /
--- Animations / Unloaded / Unload 等）自动回落到内核 Library，业务脚本可当原生库用
+
+
 setmetatable(XJWUI, {
 	__index = function(_, key)
 		return Library[key]
