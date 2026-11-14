@@ -21,7 +21,7 @@
 
 
 
-XJWUI = {Version = "v5", Defaults = {
+XJWUI = {Version = "v6", Defaults = {
 	Title = "XJW中心",
 	Footer = "感谢支持",
 	SidebarWidth = 176,
@@ -338,10 +338,10 @@ local Library = {
     
     IsLightTheme = false,
     Scheme = {
-        BackgroundColor = Color3.fromRGB(15, 15, 15),
-        MainColor = Color3.fromRGB(25, 25, 25),
-        AccentColor = Color3.fromRGB(125, 85, 255),
-        OutlineColor = Color3.fromRGB(40, 40, 40),
+        BackgroundColor = Color3.fromRGB(16, 12, 8),
+        MainColor = Color3.fromRGB(30, 22, 14),
+        AccentColor = Color3.fromRGB(255, 146, 44),
+        OutlineColor = Color3.fromRGB(76, 54, 26),
         FontColor = Color3.new(1, 1, 1),
         Font = Font.fromEnum(Enum.Font.Code),
 
@@ -19815,6 +19815,13 @@ function XJWUI:CreateWindow(opts)
 	end
 
 	self.Window = win
+	if opts.TitleFlow ~= false then
+		task.defer(function()
+			pcall(function()
+				self:InstallTitleFlow(win, { Title = opts.Title or d.Title })
+			end)
+		end)
+	end
 
 	task.delay(0.6, function()
 		if type(Library.Toggles) ~= "table" then return end
@@ -20061,27 +20068,38 @@ function XJWUI:BuildSettingsTab(tab, opts)
 
 	pcall(function()
 		local floatBox = tab:AddLeftGroupbox("悬浮窗", "settings")
-		local currentStyle = "横向悬浮条"
-		if self.FloatStyle == "orb" then
-			currentStyle = "可拖动浮球"
-		elseif self.FloatStyle == "off" then
-			currentStyle = "隐藏"
-		end
 		floatBox:AddDropdown("XJWFloatStyle", {
-			Text = "悬浮窗样式",
-			Values = {"横向悬浮条", "可拖动浮球", "隐藏"},
-			Default = currentStyle,
+			Text = "开关方式",
+			Values = {"灵动岛", "悬浮窗", "黑曜石悬浮窗", "隐藏"},
+			Default = self:GetFloatStyle(),
 			AllowNull = false,
 			Multi = false,
-			Tooltip = "横向悬浮条为横排胶囊，可拖动浮球为圆形浮标，两者都可拖到任意位置",
+			Tooltip = "灵动岛为顶部居中胶囊，悬浮窗为可拖动圆形浮标，黑曜石悬浮窗为不显示浮窗，隐藏则露出原生按钮",
 			Callback = function(value)
 				self:SetFloatStyle(value)
 			end,
 		})
-		floatBox:AddLabel("悬浮窗文字为 XJW，配色取自金色主题")
+		floatBox:AddButton({
+			Text = "重新选择开关方式",
+			Func = function()
+				self:PickFloatStyle({ Default = self.FloatStyle or "island" })
+			end,
+		})
+		floatBox:AddDropdown("XJWColorScheme", {
+			Text = "配色",
+			Values = {"橙曜", "默认紫"},
+			Default = "橙曜",
+			AllowNull = false,
+			Multi = false,
+			Tooltip = "橙曜为暖橙主题，默认紫为原 Revenant 紫",
+			Callback = function(value)
+				self:ApplyScheme(value == "橙曜" and "orange" or "default")
+			end,
+		})
+		floatBox:AddLabel("悬浮窗文字为 XJW，配色跟随主题")
 	end)
 	pcall(function()
-		self:SetFloatStyle(self.FloatStyle or "bar")
+		self:SetFloatStyle(self.FloatStyle or "island")
 	end)
 	task.defer(function() self:InstallBackgroundDropdown(tab, opts) end)
 	return tab
@@ -20224,7 +20242,7 @@ if type(Library.GetCustomIcon) == "function" and not Library.__XJWIconPatched th
 end
 
 
-XJWUI.FloatStyle = "bar"
+XJWUI.FloatStyle = "island"
 XJWUI.FloatGui = nil
 XJWUI.FloatScreen = nil
 XJWUI.FloatUnloadHooked = false
@@ -20235,13 +20253,23 @@ local XJW_GOLD = Color3.fromRGB(245, 197, 66)
 local XJW_GOLD_LIGHT = Color3.fromRGB(255, 233, 168)
 local XJW_GOLD_DEEP = Color3.fromRGB(168, 118, 10)
 local XJW_INK = Color3.fromRGB(24, 18, 7)
-local XJW_FLOAT_LABEL = {bar = "横向悬浮条", orb = "可拖动浮球", off = "隐藏"}
+local XJW_FLOAT_LABEL = {
+	island = "灵动岛",
+	bar = "悬浮窗",
+	orb = "悬浮窗",
+	obsidian = "黑曜石悬浮窗",
+	off = "隐藏",
+}
 local XJW_FLOAT_KEY = {
-	["横向悬浮条"] = "bar",
-	["可拖动浮球"] = "orb",
+	["灵动岛"] = "island",
+	["悬浮窗"] = "bar",
+	["黑曜石悬浮窗"] = "obsidian",
+	["黑曜石"] = "obsidian",
 	["隐藏"] = "off",
+	island = "island",
 	bar = "bar",
 	orb = "orb",
+	obsidian = "obsidian",
 	off = "off",
 	horizontal = "bar",
 	draggable = "orb",
@@ -20263,18 +20291,31 @@ local function XJWFloatReset()
 	XJWUI.FloatConnections = {}
 end
 
-local function XJWFloatGoldStroke(target, thickness, transparency)
+local function XJWFloatAccent()
+	local base = XJW_GOLD
+	pcall(function()
+		if type(Library.Scheme) == "table" and typeof(Library.Scheme.AccentColor) == "Color3" then
+			base = Library.Scheme.AccentColor
+		end
+	end)
+	return base, base:Lerp(Color3.new(1, 1, 1), 0.45), base:Lerp(Color3.new(0, 0, 0), 0.55)
+end
+
+local function XJWFloatGoldStroke(target, thickness, transparency, accent)
+	accent = accent or XJW_GOLD
+	local light = accent:Lerp(Color3.new(1, 1, 1), 0.45)
+	local deep = accent:Lerp(Color3.new(0, 0, 0), 0.55)
 	local stroke = Instance.new("UIStroke")
-	stroke.Color = XJW_GOLD
+	stroke.Color = accent
 	stroke.Thickness = thickness
 	stroke.Transparency = transparency
 	stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 	stroke.Parent = target
 	local gradient = Instance.new("UIGradient")
 	gradient.Color = ColorSequence.new({
-		ColorSequenceKeypoint.new(0, XJW_GOLD_LIGHT),
-		ColorSequenceKeypoint.new(0.5, XJW_GOLD),
-		ColorSequenceKeypoint.new(1, XJW_GOLD_DEEP),
+		ColorSequenceKeypoint.new(0, light),
+		ColorSequenceKeypoint.new(0.5, accent),
+		ColorSequenceKeypoint.new(1, deep),
 	})
 	gradient.Rotation = 20
 	gradient.Parent = stroke
@@ -20352,7 +20393,7 @@ local function XJWFloatContainer()
 end
 
 function XJWUI:InstallFloat(style)
-	style = XJW_FLOAT_KEY[style] or "bar"
+	style = XJW_FLOAT_KEY[style] or "island"
 	self.FloatStyle = style
 	XJWFloatReset()
 	local holder = XJWFloatContainer()
@@ -20402,8 +20443,98 @@ function XJWUI:InstallFloat(style)
 		return true
 	end
 	hideNativeButtons()
+	local accent, accentLight, accentDeep = XJWFloatAccent()
 	local savedPosition = self.FloatPositions[style]
-	if style == "orb" then
+	if style == "island" then
+		local island = Instance.new("Frame")
+		island.Name = "XJWFloatIsland"
+		island.AnchorPoint = Vector2.new(0.5, 0)
+		island.Position = savedPosition or UDim2.new(0.5, 0, 0, 10)
+		island.Size = UDim2.fromOffset(216, 44)
+		island.BackgroundColor3 = XJW_INK
+		island.BackgroundTransparency = 0.12
+		island.BorderSizePixel = 0
+		island.ZIndex = 61
+		island.Parent = holder
+		local islandCorner = Instance.new("UICorner")
+		islandCorner.CornerRadius = UDim.new(1, 0)
+		islandCorner.Parent = island
+		local islandStroke = XJWFloatGoldStroke(island, 1.5, 0.1, accent)
+		local sheen = Instance.new("UIGradient")
+		sheen.Color = ColorSequence.new({
+			ColorSequenceKeypoint.new(0, accent:Lerp(XJW_INK, 0.78)),
+			ColorSequenceKeypoint.new(0.5, XJW_INK),
+			ColorSequenceKeypoint.new(1, accent:Lerp(XJW_INK, 0.78)),
+		})
+		sheen.Parent = island
+		local dot = Instance.new("Frame")
+		dot.AnchorPoint = Vector2.new(0, 0.5)
+		dot.Position = UDim2.new(0, 16, 0.5, 0)
+		dot.Size = UDim2.fromOffset(9, 9)
+		dot.BackgroundColor3 = accentLight
+		dot.BorderSizePixel = 0
+		dot.ZIndex = 62
+		dot.Parent = island
+		local dotCorner = Instance.new("UICorner")
+		dotCorner.CornerRadius = UDim.new(1, 0)
+		dotCorner.Parent = dot
+		local brand = Instance.new("TextLabel")
+		brand.BackgroundTransparency = 1
+		brand.Position = UDim2.fromOffset(34, 0)
+		brand.Size = UDim2.fromOffset(58, 44)
+		brand.Font = Enum.Font.GothamBold
+		brand.Text = "XJW"
+		brand.TextSize = 17
+		brand.TextColor3 = accentLight
+		brand.TextXAlignment = Enum.TextXAlignment.Left
+		brand.ZIndex = 62
+		brand.Parent = island
+		local brandStroke = Instance.new("UIStroke")
+		brandStroke.Color = accentDeep
+		brandStroke.Thickness = 1
+		brandStroke.Transparency = 0.35
+		brandStroke.Parent = brand
+		local divider = Instance.new("Frame")
+		divider.BackgroundColor3 = accent
+		divider.BackgroundTransparency = 0.55
+		divider.BorderSizePixel = 0
+		divider.Position = UDim2.fromOffset(94, 13)
+		divider.Size = UDim2.new(0, 1, 0, 18)
+		divider.ZIndex = 62
+		divider.Parent = island
+		local hint = Instance.new("TextLabel")
+		hint.BackgroundTransparency = 1
+		hint.Position = UDim2.fromOffset(104, 0)
+		hint.Size = UDim2.new(1, -132, 1, 0)
+		hint.Font = Enum.Font.GothamMedium
+		hint.Text = "展开面板"
+		hint.TextSize = 13
+		hint.TextColor3 = accent
+		hint.TextXAlignment = Enum.TextXAlignment.Left
+		hint.ZIndex = 62
+		hint.Parent = island
+		task.spawn(function()
+			while island.Parent do
+				local wave = (math.sin(os.clock() * 2.4) + 1) * 0.5
+				islandStroke.Transparency = 0.04 + wave * 0.26
+				dot.BackgroundTransparency = wave * 0.55
+				sheen.Offset = Vector2.new(math.sin(os.clock() * 0.8) * 0.12, 0)
+				task.wait(0.05)
+			end
+		end)
+		XJWFloatDraggable(island, function()
+			toggleWindow()
+			local opened = false
+			pcall(function()
+				opened = Library.Toggled == true
+			end)
+			hint.Text = opened and "收起面板" or "展开面板"
+		end)
+		self.FloatGui = island
+	elseif style == "obsidian" then
+		self.FloatGui = nil
+		return true
+	elseif style == "orb" then
 		local orb = Instance.new("Frame")
 		orb.Name = "XJWFloatOrb"
 		orb.AnchorPoint = Vector2.new(0.5, 0.5)
@@ -20417,7 +20548,7 @@ function XJWUI:InstallFloat(style)
 		local orbCorner = Instance.new("UICorner")
 		orbCorner.CornerRadius = UDim.new(1, 0)
 		orbCorner.Parent = orb
-		XJWFloatGoldStroke(orb, 2, 0.08)
+		XJWFloatGoldStroke(orb, 2, 0.08, accent)
 		local glow = Instance.new("Frame")
 		glow.Name = "Glow"
 		glow.AnchorPoint = Vector2.new(0.5, 0.5)
@@ -20429,18 +20560,18 @@ function XJWUI:InstallFloat(style)
 		local glowCorner = Instance.new("UICorner")
 		glowCorner.CornerRadius = UDim.new(1, 0)
 		glowCorner.Parent = glow
-		local glowStroke = XJWFloatGoldStroke(glow, 3, 0.45)
+		local glowStroke = XJWFloatGoldStroke(glow, 3, 0.45, accent)
 		local brand = Instance.new("TextLabel")
 		brand.BackgroundTransparency = 1
 		brand.Size = UDim2.fromScale(1, 1)
 		brand.Font = Enum.Font.GothamBold
 		brand.Text = "XJW"
 		brand.TextSize = 15
-		brand.TextColor3 = XJW_GOLD_LIGHT
+		brand.TextColor3 = accentLight
 		brand.ZIndex = 62
 		brand.Parent = orb
 		local brandStroke = Instance.new("UIStroke")
-		brandStroke.Color = XJW_GOLD_DEEP
+		brandStroke.Color = accentDeep
 		brandStroke.Thickness = 1
 		brandStroke.Transparency = 0.35
 		brandStroke.Parent = brand
@@ -20468,7 +20599,7 @@ function XJWUI:InstallFloat(style)
 		local barCorner = Instance.new("UICorner")
 		barCorner.CornerRadius = UDim.new(1, 0)
 		barCorner.Parent = bar
-		local barStroke = XJWFloatGoldStroke(bar, 1.6, 0.1)
+		local barStroke = XJWFloatGoldStroke(bar, 1.6, 0.1, accent)
 		local shade = Instance.new("UIGradient")
 		shade.Color = ColorSequence.new({
 			ColorSequenceKeypoint.new(0, Color3.fromRGB(46, 34, 12)),
@@ -20483,17 +20614,17 @@ function XJWUI:InstallFloat(style)
 		brand.Font = Enum.Font.GothamBold
 		brand.Text = "XJW"
 		brand.TextSize = 20
-		brand.TextColor3 = XJW_GOLD_LIGHT
+		brand.TextColor3 = accentLight
 		brand.TextXAlignment = Enum.TextXAlignment.Left
 		brand.ZIndex = 62
 		brand.Parent = bar
 		local brandStroke = Instance.new("UIStroke")
-		brandStroke.Color = XJW_GOLD_DEEP
+		brandStroke.Color = accentDeep
 		brandStroke.Thickness = 1
 		brandStroke.Transparency = 0.35
 		brandStroke.Parent = brand
 		local divider = Instance.new("Frame")
-		divider.BackgroundColor3 = XJW_GOLD
+		divider.BackgroundColor3 = accent
 		divider.BackgroundTransparency = 0.55
 		divider.BorderSizePixel = 0
 		divider.Position = UDim2.fromOffset(76, 13)
@@ -20507,7 +20638,7 @@ function XJWUI:InstallFloat(style)
 		hint.Font = Enum.Font.GothamMedium
 		hint.Text = "展开面板"
 		hint.TextSize = 13
-		hint.TextColor3 = XJW_GOLD
+		hint.TextColor3 = accent
 		hint.TextXAlignment = Enum.TextXAlignment.Left
 		hint.ZIndex = 62
 		hint.Parent = bar
@@ -20515,7 +20646,7 @@ function XJWUI:InstallFloat(style)
 		dot.AnchorPoint = Vector2.new(1, 0.5)
 		dot.Position = UDim2.new(1, -16, 0.5, 0)
 		dot.Size = UDim2.fromOffset(8, 8)
-		dot.BackgroundColor3 = XJW_GOLD_LIGHT
+		dot.BackgroundColor3 = accentLight
 		dot.BorderSizePixel = 0
 		dot.ZIndex = 62
 		dot.Parent = bar
@@ -20551,20 +20682,23 @@ end
 
 function XJWUI:SetFloatStyle(style)
 	local key = XJW_FLOAT_KEY[style] or style
-	if key ~= "bar" and key ~= "orb" and key ~= "off" then
+	if key ~= "island" and key ~= "bar" and key ~= "orb" and key ~= "obsidian" and key ~= "off" then
+		key = "island"
+	end
+	if key == "orb" then
 		key = "bar"
 	end
 	self:InstallFloat(key)
-	return XJW_FLOAT_LABEL[key] or "横向悬浮条"
+	return XJW_FLOAT_LABEL[key] or "灵动岛"
 end
 
 function XJWUI:GetFloatStyle()
-	return XJW_FLOAT_LABEL[self.FloatStyle or "bar"] or "横向悬浮条"
+	return XJW_FLOAT_LABEL[self.FloatStyle or "island"] or "灵动岛"
 end
 
 task.defer(function()
 	pcall(function()
-		XJWUI:InstallFloat(XJWUI.FloatStyle or "bar")
+		XJWUI:InstallFloat(XJWUI.FloatStyle or "island")
 	end)
 end)
 
@@ -20594,8 +20728,280 @@ Library.InstallBackground = XJWUI.InstallBackground
 Library.InstallBackgroundDropdown = XJWUI.InstallBackgroundDropdown
 Library.BuildSettingsTab = XJWUI.BuildSettingsTab
 Library.InstallFloat = XJWUI.InstallFloat
+local XJW_SCHEMES = {
+	orange = {
+		BackgroundColor = Color3.fromRGB(16, 12, 8),
+		MainColor = Color3.fromRGB(30, 22, 14),
+		AccentColor = Color3.fromRGB(255, 146, 44),
+		OutlineColor = Color3.fromRGB(76, 54, 26),
+		FontColor = Color3.new(1, 1, 1),
+		DarkColor = Color3.new(0, 0, 0),
+		WhiteColor = Color3.new(1, 1, 1),
+	},
+	default = {
+		BackgroundColor = Color3.fromRGB(15, 15, 15),
+		MainColor = Color3.fromRGB(25, 25, 25),
+		AccentColor = Color3.fromRGB(125, 85, 255),
+		OutlineColor = Color3.fromRGB(40, 40, 40),
+		FontColor = Color3.new(1, 1, 1),
+		DarkColor = Color3.new(0, 0, 0),
+		WhiteColor = Color3.new(1, 1, 1),
+	},
+}
+
+function XJWUI:ApplyScheme(name)
+	local key = tostring(name or "orange"):lower()
+	local palette = XJW_SCHEMES[key] or XJW_SCHEMES.orange
+	for k, v in pairs(palette) do
+		pcall(function()
+			Library.Scheme[k] = v
+		end)
+	end
+	pcall(function()
+		if type(Library.UpdateColorsUsingRegistry) == "function" then
+			Library:UpdateColorsUsingRegistry()
+		end
+	end)
+	pcall(function()
+		if self.FloatStyle then
+			self:InstallFloat(self.FloatStyle)
+		end
+	end)
+	return key ~= nil and key or "orange"
+end
+
+function XJWUI:PickFloatStyle(opts)
+	opts = opts or {}
+	local parent = nil
+	pcall(function()
+		parent = LocalPlayer:WaitForChild("PlayerGui")
+	end)
+	if not parent then
+		pcall(function()
+			parent = game:GetService("CoreGui")
+		end)
+	end
+	if not parent then
+		return nil
+	end
+	local a = XJW_GOLD
+	pcall(function()
+		if type(Library.Scheme) == "table" then
+			a = Library.Scheme.AccentColor
+		end
+	end)
+	local light = a:Lerp(Color3.new(1, 1, 1), 0.42)
+	local screen = Instance.new("ScreenGui")
+	screen.Name = "XJWFloatPicker"
+	screen.ResetOnSpawn = false
+	screen.IgnoreGuiInset = true
+	screen.DisplayOrder = 2147483646
+	screen.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+	screen.Parent = parent
+	local backdrop = Instance.new("Frame")
+	backdrop.Name = "Backdrop"
+	backdrop.Size = UDim2.fromScale(1, 1)
+	backdrop.BackgroundColor3 = Color3.new(0, 0, 0)
+	backdrop.BackgroundTransparency = 0.42
+	backdrop.BorderSizePixel = 0
+	backdrop.Parent = screen
+	local panel = Instance.new("Frame")
+	panel.Name = "Panel"
+	panel.AnchorPoint = Vector2.new(0.5, 0.5)
+	panel.Position = UDim2.fromScale(0.5, 0.5)
+	panel.Size = UDim2.fromOffset(430, 300)
+	panel.BackgroundColor3 = XJW_INK
+	panel.BackgroundTransparency = 0.03
+	panel.BorderSizePixel = 0
+	panel.Parent = screen
+	local panelCorner = Instance.new("UICorner")
+	panelCorner.CornerRadius = UDim.new(0, 14)
+	panelCorner.Parent = panel
+	XJWFloatGoldStroke(panel, 1.5, 0.15, a)
+	local title = Instance.new("TextLabel")
+	title.BackgroundTransparency = 1
+	title.Position = UDim2.fromOffset(0, 20)
+	title.Size = UDim2.new(1, 0, 0, 26)
+	title.Font = Enum.Font.GothamBold
+	title.Text = "选择开关方式"
+	title.TextSize = 18
+	title.TextColor3 = light
+	title.Parent = panel
+	local sub = Instance.new("TextLabel")
+	sub.BackgroundTransparency = 1
+	sub.Position = UDim2.fromOffset(0, 48)
+	sub.Size = UDim2.new(1, 0, 0, 18)
+	sub.Font = Enum.Font.GothamMedium
+	sub.Text = "选择后立即生效，可在设置页随时更改"
+	sub.TextSize = 12
+	sub.TextColor3 = Color3.fromRGB(150, 140, 130)
+	sub.Parent = panel
+	local function dismiss()
+		pcall(function()
+			screen:Destroy()
+		end)
+	end
+	local items = {
+		{ Key = "island", Title = "灵动岛", Desc = "顶部居中胶囊" },
+		{ Key = "bar", Title = "悬浮窗", Desc = "可拖动圆形浮标" },
+		{ Key = "obsidian", Title = "黑曜石悬浮窗", Desc = "不显示浮窗" },
+	}
+	for index = 1, #items do
+		local item = items[index]
+		local card = Instance.new("TextButton")
+		card.Name = "Pick_" .. item.Key
+		card.AutoButtonColor = false
+		card.BackgroundColor3 = Color3.fromRGB(36, 26, 15)
+		card.BackgroundTransparency = 0.15
+		card.BorderSizePixel = 0
+		card.Text = ""
+		card.Position = UDim2.fromOffset(22 + (index - 1) * 131, 92)
+		card.Size = UDim2.fromOffset(120, 128)
+		card.Parent = panel
+		local cardCorner = Instance.new("UICorner")
+		cardCorner.CornerRadius = UDim.new(0, 10)
+		cardCorner.Parent = card
+		local cardStroke = Instance.new("UIStroke")
+		cardStroke.Color = a
+		cardStroke.Thickness = 1
+		cardStroke.Transparency = 0.7
+		cardStroke.Parent = card
+		local icon = Instance.new("Frame")
+		icon.AnchorPoint = Vector2.new(0.5, 0)
+		icon.Position = UDim2.new(0.5, 0, 0, 18)
+		icon.Size = UDim2.fromOffset(56, 26)
+		icon.BackgroundColor3 = Color3.fromRGB(20, 14, 8)
+		icon.BorderSizePixel = 0
+		icon.Parent = card
+		local iconCorner = Instance.new("UICorner")
+		iconCorner.CornerRadius = UDim.new(1, 0)
+		iconCorner.Parent = icon
+		XJWFloatGoldStroke(icon, 1.2, 0.35, a)
+		local iconDot = Instance.new("Frame")
+		iconDot.AnchorPoint = Vector2.new(0.5, 0.5)
+		iconDot.Position = UDim2.fromScale(0.5, 0.5)
+		iconDot.Size = UDim2.fromOffset(7, 7)
+		iconDot.BackgroundColor3 = light
+		iconDot.BorderSizePixel = 0
+		iconDot.Parent = icon
+		local iconDotCorner = Instance.new("UICorner")
+		iconDotCorner.CornerRadius = UDim.new(1, 0)
+		iconDotCorner.Parent = iconDot
+		local label = Instance.new("TextLabel")
+		label.BackgroundTransparency = 1
+		label.Position = UDim2.fromOffset(0, 56)
+		label.Size = UDim2.new(1, 0, 0, 22)
+		label.Font = Enum.Font.GothamBold
+		label.Text = item.Title
+		label.TextSize = 14
+		label.TextColor3 = light
+		label.Parent = card
+		local desc = Instance.new("TextLabel")
+		desc.BackgroundTransparency = 1
+		desc.Position = UDim2.fromOffset(8, 80)
+		desc.Size = UDim2.new(1, -16, 0, 32)
+		desc.Font = Enum.Font.GothamMedium
+		desc.Text = item.Desc
+		desc.TextSize = 11
+		desc.TextWrapped = true
+		desc.TextColor3 = Color3.fromRGB(150, 140, 130)
+		desc.Parent = card
+		card.MouseEnter:Connect(function()
+			cardStroke.Transparency = 0.15
+			card.BackgroundColor3 = Color3.fromRGB(48, 34, 18)
+		end)
+		card.MouseLeave:Connect(function()
+			cardStroke.Transparency = 0.7
+			card.BackgroundColor3 = Color3.fromRGB(36, 26, 15)
+		end)
+		card.MouseButton1Click:Connect(function()
+			self:SetFloatStyle(item.Key)
+			dismiss()
+			if type(opts.Callback) == "function" then
+				task.spawn(opts.Callback, item.Key)
+			end
+		end)
+	end
+	return screen
+end
+
+function XJWUI:_AttachTitleFlow(label, speed)
+	if not label or label:FindFirstChild("XJWTitleFlow") then
+		return nil
+	end
+	local accent = XJW_GOLD
+	pcall(function()
+		if type(Library.Scheme) == "table" then
+			accent = Library.Scheme.AccentColor
+		end
+	end)
+	local grad = Instance.new("UIGradient")
+	grad.Name = "XJWTitleFlow"
+	grad.Color = ColorSequence.new({
+		ColorSequenceKeypoint.new(0, accent:Lerp(Color3.new(0, 0, 0), 0.55)),
+		ColorSequenceKeypoint.new(0.35, accent),
+		ColorSequenceKeypoint.new(0.5, accent:Lerp(Color3.new(1, 1, 1), 0.55)),
+		ColorSequenceKeypoint.new(0.65, accent),
+		ColorSequenceKeypoint.new(1, accent:Lerp(Color3.new(0, 0, 0), 0.55)),
+	})
+	label.TextColor3 = Color3.new(1, 1, 1)
+	grad.Parent = label
+	task.spawn(function()
+		local base = os.clock()
+		while grad.Parent == label do
+			local t = os.clock() - base
+			grad.Rotation = (t * (speed or 62)) % 360
+			grad.Offset = Vector2.new(math.sin(t * 1.1) * 0.08, 0)
+			RunService.RenderStepped:Wait()
+		end
+	end)
+	return grad
+end
+
+function XJWUI:InstallTitleFlow(win, opts)
+	opts = opts or {}
+	local target = opts.Title
+	local speed = opts.Speed or 62
+	local function seek()
+		local frame = nil
+		pcall(function()
+			frame = win and win.MainFrame
+		end)
+		if not frame then
+			return nil
+		end
+		local found = nil
+		for _, obj in ipairs(frame:GetDescendants()) do
+			if obj:IsA("TextLabel") and (target == nil or obj.Text == target) and obj.TextSize >= 15 then
+				found = obj
+				break
+			end
+		end
+		return found
+	end
+	local label = seek()
+	if label then
+		return self:_AttachTitleFlow(label, speed)
+	end
+	task.spawn(function()
+		for _ = 1, 120 do
+			local found = seek()
+			if found then
+				self:_AttachTitleFlow(found, speed)
+				return
+			end
+			task.wait(0.1)
+		end
+	end)
+	return nil
+end
+
 Library.SetFloatStyle = XJWUI.SetFloatStyle
 Library.GetFloatStyle = XJWUI.GetFloatStyle
+Library.PickFloatStyle = XJWUI.PickFloatStyle
+Library.ApplyScheme = XJWUI.ApplyScheme
+Library.InstallTitleFlow = XJWUI.InstallTitleFlow
+Library.FloatLabels = XJW_FLOAT_LABEL
 
 
 Library.CreateWindow = function(self, opts)
