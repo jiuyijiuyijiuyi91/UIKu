@@ -21,7 +21,7 @@
 
 
 
-XJWUI = {Version = "v6", Defaults = {
+XJWUI = {Version = "", Defaults = {
 	Title = "XJW中心",
 	Footer = "感谢支持",
 	SidebarWidth = 176,
@@ -19674,16 +19674,24 @@ do
 			end
 		end)
 
-		local gui = Library and Library.ScreenGui
-		if gui then
-			task.spawn(function()
+		task.spawn(function()
+			local gui = Library and Library.ScreenGui
+			while M.Enable and not gui do
+				task.wait(0.1)
+				gui = Library and Library.ScreenGui
+			end
+			if not gui then
+				return
+			end
+			pcall(function()
 				gui.DescendantAdded:Connect(function(obj)
 					if not M.Enable then return end
 					task.defer(trObject, obj)
 					task.delay(0.1, trObject, obj)
 				end)
 			end)
-		end
+			scanAll()
+		end)
 	end
 
 	REV_I18N = M
@@ -20071,7 +20079,7 @@ function XJWUI:BuildSettingsTab(tab, opts)
 		floatBox:AddDropdown("XJWFloatStyle", {
 			Text = "开关方式",
 			Values = {"灵动岛", "悬浮窗", "黑曜石悬浮窗", "隐藏"},
-			Default = self:GetFloatStyle(),
+			Default = (self.BootHandle and self.BootHandle.styleKey) or self:GetFloatStyle(),
 			AllowNull = false,
 			Multi = false,
 			Tooltip = "灵动岛为顶部居中胶囊，悬浮窗为可拖动圆形浮标，黑曜石悬浮窗为不显示浮窗，隐藏则露出原生按钮",
@@ -20097,6 +20105,68 @@ function XJWUI:BuildSettingsTab(tab, opts)
 			end,
 		})
 		floatBox:AddLabel("悬浮窗文字为 XJW，配色跟随主题")
+	end)
+	pcall(function()
+		local okAdd, box1 = pcall(function()
+			return tab:AddLeftGroupbox("卸载", "shield")
+		end)
+		local unloadBox = (okAdd and box1) or nil
+		if not unloadBox then
+			local okFallback, box = pcall(function()
+				return tab:AddLeftGroupbox("卸载")
+			end)
+			unloadBox = okFallback and box or nil
+		end
+		if not unloadBox then
+			return
+		end
+		pcall(function()
+			local holder = unloadBox.BoxHolder
+			if not holder then
+				return
+			end
+			local themes = tab.Groupboxes and tab.Groupboxes["Themes"]
+			local baseOrder = 0
+			if themes and themes.BoxHolder and type(themes.BoxHolder.LayoutOrder) == "number" then
+				baseOrder = themes.BoxHolder.LayoutOrder
+			end
+			holder.LayoutOrder = baseOrder - 10
+		end)
+		unloadBox:AddButton({
+			Text = "卸载脚本",
+			Func = function()
+				local window = opts.Window or self.SettingsWindow or Library.Window
+				local function doUnload()
+					if type(opts.OnUnload) == "function" then
+						task.defer(opts.OnUnload)
+						return
+					end
+					task.defer(function()
+						pcall(function()
+							Library:Unload()
+						end)
+					end)
+				end
+				if window and type(window.AddDialog) == "function" then
+					local okDialog = pcall(function()
+						window:AddDialog("XJWUnloadConfirm", {
+							Title = "卸载脚本",
+							Description = "确定要卸载脚本吗？所有已启用的功能将被关闭，脚本随即终止。",
+							AutoDismiss = true,
+							OutsideClickDismiss = true,
+							FooterButtons = {
+								Cancel = { Title = "取消", Variant = "Ghost", Order = 1, Callback = function() end },
+								Unload = { Title = "卸载", Variant = "Destructive", Order = 2, Callback = doUnload },
+							},
+						})
+					end)
+					if okDialog then
+						return
+					end
+				end
+				doUnload()
+			end,
+		})
 	end)
 	pcall(function()
 		self:SetFloatStyle(self.FloatStyle or "island")
@@ -20688,6 +20758,10 @@ function XJWUI:SetFloatStyle(style)
 	if key == "orb" then
 		key = "bar"
 	end
+	if self.BootHiding and not self.BootForce then
+		self.FloatStyle = key
+		return XJW_FLOAT_LABEL[key] or "灵动岛"
+	end
 	self:InstallFloat(key)
 	return XJW_FLOAT_LABEL[key] or "灵动岛"
 end
@@ -20925,6 +20999,387 @@ function XJWUI:PickFloatStyle(opts)
 	return screen
 end
 
+local function XJWBootSchemeColor(key, fallback)
+	local scheme = Library and Library.Scheme
+	local c = type(scheme) == "table" and scheme[key]
+	if typeof(c) == "Color3" then
+		return c
+	end
+	return fallback
+end
+
+function XJWUI:Boot(opts)
+	opts = opts or {}
+	if self.BootHandle and not self.BootHandle.finished then
+		return self.BootHandle
+	end
+	if opts.Chinese ~= false then
+		pcall(function()
+			self:EnableChinese(true)
+		end)
+	end
+	if opts.Scheme then
+		pcall(function()
+			self:ApplyScheme(opts.Scheme)
+		end)
+	end
+
+	local TweenService = game:GetService("TweenService")
+	local labels = opts.Options
+	if type(labels) ~= "table" or #labels == 0 then
+		labels = { "灵动岛", "悬浮窗", "黑曜石悬浮窗" }
+	end
+	local boot = {
+		styleKey = nil,
+		picked = false,
+		uiReady = false,
+		awaiting = false,
+		finished = false,
+	}
+	self.BootHandle = boot
+	self.BootHiding = true
+
+	local playerGui = LocalPlayer:WaitForChild("PlayerGui")
+	local loading = nil
+	local progress = 0
+	local named = {}
+	local pickerGui = nil
+
+	local function accentColor()
+		return XJWBootSchemeColor("AccentColor", Color3.fromRGB(125, 85, 255))
+	end
+
+	local function lighten(c, amount)
+		if typeof(c) ~= "Color3" then
+			return c
+		end
+		return c:Lerp(Color3.new(1, 1, 1), amount)
+	end
+
+	local function idleColor()
+		return lighten(XJWBootSchemeColor("MainColor", Color3.fromRGB(25, 25, 25)), 0.06)
+	end
+
+	local function hideAllFloats()
+		pcall(function()
+			XJWUI.FloatStyle = "off"
+			if XJWUI.FloatGui then
+				pcall(function()
+					XJWUI.FloatGui:Destroy()
+				end)
+				XJWUI.FloatGui = nil
+			end
+			if XJWUI.FloatScreen then
+				pcall(function()
+					XJWUI.FloatScreen:Destroy()
+				end)
+				XJWUI.FloatScreen = nil
+			end
+		end)
+		pcall(function()
+			local holder = Library and Library.Floats
+			if not holder then
+				return
+			end
+			for _, item in ipairs(holder:GetDescendants()) do
+				if item:IsA("GuiObject") then
+					item.Visible = false
+				end
+			end
+		end)
+	end
+
+	boot.HideFloats = hideAllFloats
+	hideAllFloats()
+	task.spawn(function()
+		while not boot.finished do
+			hideAllFloats()
+			task.wait(0.12)
+		end
+	end)
+
+	local function setStage(step)
+		progress = step
+		if loading then
+			pcall(function()
+				loading:SetCurrentStep(step)
+			end)
+		end
+	end
+
+	local function paint()
+		local accent = accentColor()
+		local idle = idleColor()
+		local font = XJWBootSchemeColor("FontColor", Color3.new(1, 1, 1))
+		local onAccent = XJWBootSchemeColor("DarkColor", Color3.new(0, 0, 0))
+		local bright = 0.299 * accent.R + 0.587 * accent.G + 0.114 * accent.B
+		if bright < 0.6 then
+			onAccent = font
+		end
+		for label, btn in pairs(named) do
+			if boot.styleKey == label then
+				pcall(function()
+					btn.BackgroundColor3 = accent
+					btn.TextColor3 = onAccent
+				end)
+			else
+				pcall(function()
+					btn.BackgroundColor3 = idle
+					btn.TextColor3 = font
+				end)
+			end
+		end
+	end
+
+	local function destroyPicker()
+		if not pickerGui then
+			return
+		end
+		pcall(function()
+			pickerGui:Destroy()
+		end)
+		pickerGui = nil
+		named = {}
+	end
+
+	local function finish()
+		if boot.finished then
+			return
+		end
+		boot.finished = true
+		boot.awaiting = false
+		destroyPicker()
+		if loading then
+			pcall(function()
+				loading:Destroy()
+			end)
+			loading = nil
+		end
+		self.BootHiding = false
+		boot.styleKey = boot.styleKey or labels[1]
+		if type(boot.OnApply) == "function" then
+			pcall(boot.OnApply, boot.styleKey)
+		end
+		pcall(function()
+			self:SetFloatStyle(boot.styleKey)
+		end)
+		pcall(function()
+			self:Notify("加载完成，开关方式：" .. tostring(boot.styleKey))
+		end)
+		if type(opts.OnFinish) == "function" then
+			task.spawn(opts.OnFinish, boot.styleKey)
+		end
+	end
+
+	boot.Finish = finish
+
+	local function pick(label)
+		if boot.picked or boot.finished then
+			return
+		end
+		boot.styleKey = label
+		boot.picked = true
+		paint()
+		if boot.uiReady then
+			task.defer(finish)
+		end
+	end
+
+	boot.Pick = pick
+
+	local function ready()
+		boot.uiReady = true
+		paint()
+		if boot.picked then
+			finish()
+			return
+		end
+		if not pickerGui then
+			pick(labels[1])
+			finish()
+			return
+		end
+		boot.awaiting = true
+		setStage(math.max(progress, 90))
+		if loading then
+			pcall(function()
+				loading:SetMessage("请选择开关方式")
+				loading:SetDescription("Please select your toggle style")
+			end)
+		end
+	end
+
+	boot.Ready = ready
+
+	local okGui = pcall(function()
+		local gui = Instance.new("ScreenGui")
+		gui.Name = "XJWBootStylePicker"
+		gui.ResetOnSpawn = false
+		gui.IgnoreGuiInset = true
+		gui.DisplayOrder = 2147483646
+		gui.Parent = playerGui
+		pickerGui = gui
+	end)
+
+	if okGui and pickerGui then
+		local panelBg = XJWBootSchemeColor("BackgroundColor", XJW_INK)
+		local panelStroke = XJWBootSchemeColor("OutlineColor", Color3.fromRGB(40, 40, 40))
+		local panelFont = XJWBootSchemeColor("FontColor", Color3.new(1, 1, 1))
+		local panelAccent = accentColor()
+
+		local frame = Instance.new("Frame")
+		frame.Name = "BootPanel"
+		frame.AnchorPoint = Vector2.new(0.5, 1)
+		frame.Position = UDim2.new(0.5, 0, 1, -24)
+		frame.Size = UDim2.new(0, 436, 0, 88)
+		frame.BackgroundColor3 = panelBg
+		frame.BackgroundTransparency = 0.12
+		frame.BorderSizePixel = 0
+		frame.Parent = pickerGui
+
+		local corner = Instance.new("UICorner")
+		corner.CornerRadius = UDim.new(0, 10)
+		corner.Parent = frame
+
+		local stroke = Instance.new("UIStroke")
+		stroke.Color = panelStroke
+		stroke.Thickness = 1.5
+		stroke.Parent = frame
+
+		local title = Instance.new("TextLabel")
+		title.BackgroundTransparency = 1
+		title.Position = UDim2.new(0, 0, 0, 6)
+		title.Size = UDim2.new(1, 0, 0, 20)
+		title.Font = Enum.Font.GothamBold
+		title.Text = "选择开关方式 / Toggle Style"
+		title.TextColor3 = panelFont
+		title.TextSize = 14
+		title.Parent = frame
+
+		local titleGrad = Instance.new("UIGradient")
+		titleGrad.Color = ColorSequence.new(panelAccent, lighten(panelAccent, 0.55))
+		titleGrad.Parent = title
+
+		task.spawn(function()
+			local t0 = os.clock()
+			while title and title.Parent do
+				titleGrad.Rotation = (os.clock() - t0) * 60 % 360
+				RunService.RenderStepped:Wait()
+			end
+		end)
+
+		local xs = { 8, 152, 296 }
+		local btnIdle = idleColor()
+		local btnHover = lighten(XJWBootSchemeColor("MainColor", Color3.fromRGB(25, 25, 25)), 0.16)
+		local btnFont = panelFont
+		for i, label in ipairs(labels) do
+			local btn = Instance.new("TextButton")
+			btn.Name = "Boot_" .. tostring(i)
+			btn.Position = UDim2.new(0, xs[i] or (8 + (i - 1) * 144), 0, 36)
+			btn.Size = UDim2.new(0, 132, 0, 40)
+			btn.BackgroundColor3 = btnIdle
+			btn.TextColor3 = btnFont
+			btn.Font = Enum.Font.GothamBold
+			btn.Text = label
+			btn.TextSize = 14
+			btn.AutoButtonColor = false
+			btn.BorderSizePixel = 0
+			btn.Parent = frame
+
+			local btnCorner = Instance.new("UICorner")
+			btnCorner.CornerRadius = UDim.new(0, 8)
+			btnCorner.Parent = btn
+
+			local scale = Instance.new("UIScale")
+			scale.Parent = btn
+
+			named[label] = btn
+
+			btn.MouseEnter:Connect(function()
+				if boot.styleKey ~= label then
+					TweenService:Create(btn, TweenInfo.new(0.12), { BackgroundColor3 = btnHover }):Play()
+				end
+			end)
+
+			btn.MouseLeave:Connect(function()
+				if boot.styleKey ~= label then
+					TweenService:Create(btn, TweenInfo.new(0.12), { BackgroundColor3 = btnIdle }):Play()
+				end
+			end)
+
+			btn.MouseButton1Click:Connect(function()
+				TweenService:Create(scale, TweenInfo.new(0.08, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { Scale = 0.9 }):Play()
+				task.delay(0.09, function()
+					TweenService:Create(scale, TweenInfo.new(0.2, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = 1 }):Play()
+				end)
+				pick(label)
+			end)
+
+			pcall(function()
+				btn.TouchTap:Connect(function()
+					pick(label)
+				end)
+			end)
+		end
+
+		paint()
+	end
+
+	local loadOpts = {
+		Title = opts.Title or self.Defaults.Title,
+		CurrentStep = 0,
+		TotalSteps = 100,
+		ShowSidebar = false,
+		AlwaysOnTop = true,
+		WindowWidth = 460,
+		WindowHeight = 220,
+		ContentWidth = 460,
+	}
+	if type(opts.Loading) == "table" then
+		for k, v in pairs(opts.Loading) do
+			loadOpts[k] = v
+		end
+	end
+
+	if pcall(function()
+		loading = Library:CreateLoading(loadOpts)
+	end) and loading then
+		pcall(function()
+			loading:SetMessage(opts.Title or self.Defaults.Title)
+			loading:SetDescription("正在初始化...")
+			loading:SetCurrentStep(0)
+		end)
+		task.spawn(function()
+			local stages = {
+				{ 0, opts.Title or self.Defaults.Title, "正在启动..." },
+				{ 18, "初始化界面", "准备 UI 资源..." },
+				{ 38, "加载模块", "解析脚本模块..." },
+				{ 58, "构建功能", "注册自动化任务..." },
+				{ 78, "应用主题", "调整配色与字体..." },
+				{ 88, "收尾工作", "检查依赖..." },
+			}
+			local idx = 1
+			while loading and not boot.finished and progress < 90 do
+				if not boot.awaiting and idx <= #stages and progress >= stages[idx][1] then
+					local text = stages[idx][2]
+					local desc = stages[idx][3]
+					pcall(function()
+						loading:SetMessage(text)
+						loading:SetDescription(desc)
+					end)
+					idx = idx + 1
+				end
+				setStage(math.min(progress + math.random(2, 4), 90))
+				task.wait(0.05)
+			end
+		end)
+	else
+		loading = nil
+	end
+
+	return boot
+end
+
 function XJWUI:_AttachTitleFlow(label, speed)
 	if not label or label:FindFirstChild("XJWTitleFlow") then
 		return nil
@@ -21002,6 +21457,57 @@ Library.PickFloatStyle = XJWUI.PickFloatStyle
 Library.ApplyScheme = XJWUI.ApplyScheme
 Library.InstallTitleFlow = XJWUI.InstallTitleFlow
 Library.FloatLabels = XJW_FLOAT_LABEL
+
+Library.Boot = function(self, opts)
+	return XJWUI:Boot(opts)
+end
+
+Library.StartBoot = Library.Boot
+
+Library.GetBoot = function()
+	return XJWUI.BootHandle
+end
+
+local XJW_UnloadCore = Library.Unload
+
+function Library:Unload()
+	if type(XJW_UnloadCore) == "function" and not self.Unloaded then
+		pcall(XJW_UnloadCore, self)
+	end
+	self.Unloaded = true
+	pcall(function()
+		XJWUI.BootHiding = false
+		if XJWUI.BootHandle then
+			XJWUI.BootHandle.finished = true
+		end
+	end)
+	local parents = {}
+	pcall(function()
+		table.insert(parents, LocalPlayer:FindFirstChild("PlayerGui"))
+	end)
+	pcall(function()
+		table.insert(parents, game:GetService("CoreGui"))
+	end)
+	for _, parentGui in ipairs(parents) do
+		if parentGui then
+			pcall(function()
+				for _, child in ipairs(parentGui:GetChildren()) do
+					if child:IsA("ScreenGui") and type(child.Name) == "string" and child.Name:sub(1, 3) == "XJW" then
+						child:Destroy()
+					end
+				end
+			end)
+		end
+	end
+	pcall(function()
+		if self.ScreenGui then
+			self.ScreenGui:Destroy()
+		end
+	end)
+	self.ScreenGui = nil
+	XJWUI.FloatScreen = nil
+	XJWUI.FloatGui = nil
+end
 
 
 Library.CreateWindow = function(self, opts)
