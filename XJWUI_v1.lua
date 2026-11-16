@@ -43,7 +43,7 @@ HttpService = game:GetService("HttpService")
 LocalPlayer = Players.LocalPlayer
 
 DIR = "Revenant"
-REPO = "https://raw.githubusercontent.com/jiuyijiuyijiuyi91/UIKu/main/"
+REPO = "https://raw.githubusercontent.com/jiuyijiuyijiuyi91/UIKu/main/" -- 你自己的仓库地址，保留
 
 
 local LIBRARY_SOURCE = [====[
@@ -78,7 +78,7 @@ local Toggles = {}
 local Options = {}
 local Tooltips = {}
 
-local BaseURL = "https://raw.githubusercontent.com/aristooey/Obsidian/refs/heads/main/"
+-- [内联版] 原第三方远程 BaseURL 已移除：Obsidian 资源改用 Roblox 官方资产 ID，无任何远程下载
 
 
 
@@ -97,7 +97,7 @@ local CustomImageManagerAssets = {
     TransparencyTexture = {
         RobloxId = 139785960036434,
         Path = "Obsidian/assets/TransparencyTexture.png",
-        URL = BaseURL .. "assets/TransparencyTexture.png",
+        URL = nil, -- [内联版] 不再远程下载
 
         Id = nil,
     },
@@ -105,7 +105,7 @@ local CustomImageManagerAssets = {
     SaturationMap = {
         RobloxId = 4155801252,
         Path = "Obsidian/assets/SaturationMap.png",
-        URL = BaseURL .. "assets/SaturationMap.png",
+        URL = nil, -- [内联版] 不再远程下载
 
         Id = nil,
     },
@@ -113,7 +113,7 @@ local CustomImageManagerAssets = {
     LoadingIcon = {
         RobloxId = 97544096941083,
         Path = "Obsidian/assets/LoadingIcon.png",
-        URL = BaseURL .. "assets/LoadingIcon.png",
+        URL = nil, -- [内联版] 不再远程下载
 
         Id = nil,
     },
@@ -121,7 +121,7 @@ local CustomImageManagerAssets = {
     CheckIcon = {
         RobloxId = 97682394690683,
         Path = "Obsidian/assets/CheckIcon.png",
-        URL = BaseURL .. "assets/CheckIcon.png",
+        URL = nil, -- [内联版] 不再远程下载
 
         Id = nil,
     },
@@ -203,6 +203,9 @@ do
         end
 
         local AssetData = CustomImageManagerAssets[AssetName]
+        if not AssetData or not AssetData.URL then
+            return false, "embedded-assets-only: 无远程 URL"
+        end
 
         RecursiveCreatePath(AssetData.Path, true)
 
@@ -434,7 +437,7 @@ local Templates = {
 
     
     Window = {
-        Title = "No Title",
+        Title = "无标题",
         Footer = "No Footer",
 
         Position = UDim2.fromOffset(6, 6),
@@ -530,14 +533,14 @@ local Templates = {
         Width = nil,
     },
     Dialog = {
-        Title = "Dialog",
-        Description = "Description",
+        Title = "提示",
+        Description = "描述",
         AutoDismiss = true,
         OutsideClickDismiss = true,
         FooterButtons = {}
     },
     Loading = {
-        Title = "mspaint",
+        Title = "加载中",
         Icon = 95816097006870,
         IconSize = UDim2.fromOffset(30, 30),
 
@@ -559,7 +562,7 @@ local Templates = {
         SidebarWidth = 250,
     },
     Toggle = {
-        Text = "Toggle",
+        Text = "开关",
         Default = false,
 
         Callback = function() end,
@@ -570,7 +573,7 @@ local Templates = {
         Visible = true,
     },
     Input = {
-        Text = "Input",
+        Text = "输入框",
         Default = "",
         Finished = false,
         Numeric = false,
@@ -588,7 +591,7 @@ local Templates = {
         Visible = true,
     },
     Slider = {
-        Text = "Slider",
+        Text = "滑块",
         Default = 0,
         Min = 0,
         Max = 100,
@@ -658,7 +661,7 @@ local Templates = {
 
     
     KeyPicker = {
-        Text = "KeyPicker",
+        Text = "按键选择",
 
         Default = "None",
         DefaultModifiers = {},
@@ -1610,35 +1613,99 @@ type IconModule = {
     GetAsset: (Name: string) -> Icon?,
 }
 
-local ICON_SOURCES = {
-    "https://gitlab.com/upio/lucide-roblox-direct/-/raw/main/source.lua",
-    "https://raw.githubusercontent.com/upio/lucide-roblox-direct/main/source.lua",
+-- [内联版] 图标改为库内置字符图标（FontFace + 文本），完全离线
+local EMBEDDED_ICON_GLYPHS = {
+    ["check"] = "\u{2713}",
+    ["x"] = "\u{2715}",
+    ["chevron-up"] = "\u{25B2}",
+    ["chevron-down"] = "\u{25BC}",
+    ["chevron-left"] = "\u{25C0}",
+    ["chevron-right"] = "\u{25B6}",
+    ["chevrons-up-down"] = "\u{2195}",
+    ["settings"] = "\u{2261}",
+    ["key"] = "\u{25C6}",
+    ["move"] = "+",
+    ["move-diagonal-2"] = "\u{25E2}",
+    ["square-arrow-down-left"] = "\u{25E3}",
+    ["user"] = "\u{25CF}",
+    ["users"] = "\u{25CF}",
+    ["lock"] = "\u{25A0}",
+    ["unlock"] = "\u{25A1}",
+    ["search"] = "\u{25CB}",
+    ["plus"] = "+",
+    ["minus"] = "\u{2212}",
+    ["trash"] = "\u{2715}",
+    ["star"] = "\u{2605}",
+    ["shield"] = "\u{25C7}",
+    ["zap"] = "\u{25C6}",
+    ["info"] = "i",
+    ["warning"] = "!",
+    ["clock"] = "\u{25CB}",
+    ["download"] = "\u{2193}",
+    ["upload"] = "\u{2191}",
+    ["refresh"] = "\u{21BA}",
+    ["copy"] = "\u{25A3}",
+    ["external-link"] = "\u{2197}",
+    ["folder"] = "\u{25A4}",
+    ["file"] = "\u{25A2}",
+    ["code"] = "\u{25C7}",
+    ["eye"] = "\u{25C9}",
+    ["eye-off"] = "\u{25CE}",
+    ["bell"] = "\u{2022}",
+    ["play"] = "\u{25B6}",
+    ["pause"] = "\u{2016}",
+    ["home"] = "\u{25A0}",
+    ["target"] = "\u{25CE}",
+    ["crosshair"] = "\u{25CE}",
+    ["list"] = "\u{2261}",
+    ["grid"] = "\u{25A6}",
+    ["link"] = "\u{25C8}",
+    ["image"] = "\u{25A8}",
+    ["palette"] = "\u{25C6}",
+    ["music"] = "\u{266A}",
+    ["volume"] = "\u{266A}",
+    ["calendar"] = "\u{25A5}",
+    ["mail"] = "\u{25A4}",
 }
+
+local function EmbeddedIconFont()
+    local ok, face = pcall(function()
+        return Font.fromEnum(Enum.Font.GothamBold)
+    end)
+    if ok then return face end
+    return nil
+end
+
+local function BuildEmbeddedIconModule()
+    local Face = EmbeddedIconFont()
+    local Names = {}
+    for Name in EMBEDDED_ICON_GLYPHS do
+        table.insert(Names, Name)
+    end
+    table.sort(Names)
+    local Module = { Icons = Names }
+    function Module.GetAsset(Name)
+        local Glyph = EMBEDDED_ICON_GLYPHS[string.lower(tostring(Name))]
+        if not Glyph or not Face then return nil end
+        return {
+            Url = "",
+            FontFace = Face,
+            Text = Glyph,
+            IconName = Name,
+            ImageRectOffset = Vector2.zero,
+            ImageRectSize = Vector2.zero,
+        }
+    end
+    return Module
+end
 
 local function IsIconModule(Module)
     return typeof(Module) == "table" and typeof(Module.GetAsset) == "function"
 end
 
 local function LoadIconModule()
-    for _, Url in ipairs(ICON_SOURCES) do
-        local Ok, Module = pcall(function()
-            local Source = game:HttpGet(Url)
-            
-            
-            
-            if typeof(Source) ~= "string" or #Source < 512 then
-                return nil
-            end
-            local Chunk = loadstring(Source)
-            if typeof(Chunk) ~= "function" then
-                return nil
-            end
-            return (Chunk :: () -> IconModule)()
-        end)
-        if Ok and IsIconModule(Module) then
-            return true, Module
-        end
-    end
+    local Module = BuildEmbeddedIconModule()
+    if IsIconModule(Module) then return true, Module end
     return false, nil
 end
 
@@ -1679,38 +1746,9 @@ end
 
 Library._UrlAssetCache = Library._UrlAssetCache or {}
 function Library:GetImageFromUrl(Url: string): string?
+    -- [内联版] 该接口已停用：库内不再抓取任何图片
     if typeof(Url) ~= "string" then
         return nil
-    end
-    if Library._UrlAssetCache[Url] then
-        return Library._UrlAssetCache[Url]
-    end
-    if not (getcustomasset and writefile) then
-        return nil 
-    end
-
-    
-    local ext = Url:match("%.(%w%w%w%w?)$") or "png"
-    local safe = Url:gsub("%W", ""):sub(-40)
-    local folder = "obsidian_images"
-    local path = folder .. "/" .. #Url .. "_" .. safe .. "." .. ext
-
-    local ok = pcall(function()
-        if isfolder and makefolder and not isfolder(folder) then
-            makefolder(folder)
-        end
-        if not (isfile and isfile(path)) then
-            writefile(path, game:HttpGet(Url))
-        end
-    end)
-    if not ok then
-        return nil
-    end
-
-    local ok2, asset = pcall(getcustomasset, path)
-    if ok2 and typeof(asset) == "string" and asset ~= "" then
-        Library._UrlAssetCache[Url] = asset
-        return asset
     end
     return nil
 end
@@ -2146,27 +2184,8 @@ function Library:SetIconModule(module: IconModule)
     SettingsIcon = Library:GetIcon("settings")
 end
 
-local OnlineFetchIcons, OnlineIcons = pcall(function()
-    return (loadstring(
-        game:HttpGet("https://raw.githubusercontent.com/notpoiu/Molto/refs/heads/main/source.lua")
-    ) :: () -> IconModule)()
-end)
-do
-    if OnlineFetchIcons and OnlineIcons then
-        OnlineIcons.SetProvider("lucide")
-        Library:SetIconModule(OnlineIcons)
-    else
-        OnlineFetchIcons, OnlineIcons = pcall(function()
-            return (loadstring(
-                game:HttpGet("https://raw.githubusercontent.com/notpoiu/lucide-roblox-direct/refs/heads/main/source.lua")
-            ) :: () -> IconModule)()
-        end)
-        
-        if OnlineFetchIcons and OnlineIcons then
-            Library:SetIconModule(OnlineIcons)
-        end
-    end
-end
+-- [内联版] 图标已改为库内字符图标，无任何外部脚本来源
+Library:SetIconModule(BuildEmbeddedIconModule())
 
 
 Library.Cursor = {}
@@ -5041,7 +5060,7 @@ do
                 BackgroundTransparency = 1,
                 LayoutOrder = TotalModeButtons,
                 Size = UDim2.new(1, 0, 0, IsForButton and 21 or 19),
-                Text = "Remove",
+                Text = "移除",
                 TextSize = 14,
                 TextTransparency = 0.5,
                 Parent = MenuTable.Menu,
@@ -6217,12 +6236,12 @@ do
                 end))
             end
 
-            CreateButton("Copy color", function()
+            CreateButton("复制颜色", function()
                 Library.CopiedColor = { ColorPicker.Value, ColorPicker.Transparency }
             end)
 
             ColorPicker.SetValueRGB = function(...) end 
-            CreateButton("Paste color", function()
+            CreateButton("粘贴颜色", function()
                 if not Library.CopiedColor then
                     return
                 end
@@ -6231,11 +6250,11 @@ do
             end)
 
             if setclipboard then
-                CreateButton("Copy Hex", function()
+                CreateButton("复制 HEX", function()
                     setclipboard(tostring(ColorPicker.Value:ToHex()))
                 end)
 
-                CreateButton("Copy RGB", function()
+                CreateButton("复制 RGB", function()
                     setclipboard(table.concat({
                         math.floor(ColorPicker.Value.R * 255),
                         math.floor(ColorPicker.Value.G * 255),
@@ -6261,7 +6280,7 @@ do
         local CopyColorButton = New("TextButton", {
             BackgroundColor3 = "MainColor",
             Size = UDim2.fromScale(1, 1),
-            Text = "Copy color",
+            Text = "复制颜色",
             TextSize = 14,
             Parent = ActionHolder,
         })
@@ -6280,7 +6299,7 @@ do
         local PasteColorButton = New("TextButton", {
             BackgroundColor3 = "MainColor",
             Size = UDim2.fromScale(1, 1),
-            Text = "Paste color",
+            Text = "粘贴颜色",
             TextSize = 14,
             Parent = ActionHolder,
         })
@@ -6330,7 +6349,7 @@ do
 
             CopyColorResetId += 1
             local ThisResetId = CopyColorResetId
-            CopyColorButton.Text = "Copied color"
+            CopyColorButton.Text = "已复制颜色"
 
             task.delay(1, function()
                 if ColorPicker.Destroyed or ThisResetId ~= CopyColorResetId then
@@ -6346,10 +6365,10 @@ do
             local ThisResetId = PasteColorResetId
 
             if not Library.CopiedColor then
-                PasteColorButton.Text = "Nothing to paste"
+                PasteColorButton.Text = "没有可粘贴的内容"
             else
                 ColorPicker:SetValueRGB(Library.CopiedColor[1], Library.CopiedColor[2])
-                PasteColorButton.Text = "Pasted color"
+                PasteColorButton.Text = "已粘贴颜色"
             end
 
             task.delay(1, function()
@@ -7434,7 +7453,7 @@ do
                         Button.IconImage.Visible = false
                     end
 
-                    Button.Label.Text = "Are you sure?"
+                    Button.Label.Text = "确定吗？"
                     Button.Label.Visible = true
                     Button.Label.TextColor3 = Library.Scheme.AccentColor
                     Library.Registry[Button.Label].TextColor3 = "AccentColor"
@@ -9126,7 +9145,7 @@ do
         if Info.Searchable then
             SearchBox = New("TextBox", {
                 BackgroundTransparency = 1,
-                PlaceholderText = "Search...",
+                PlaceholderText = "搜索...",
                 Position = UDim2.fromOffset(-8, 0),
                 Size = UDim2.new(1, -12, 1, 0),
                 TextSize = 14,
@@ -12351,7 +12370,7 @@ function Library:CreateWindow(WindowInfo)
 
         SearchBox = New("TextBox", {
             BackgroundColor3 = "MainColor",
-            PlaceholderText = "Search",
+            PlaceholderText = "搜索",
             Size = WindowInfo.SearchbarSize,
             TextScaled = true,
             Visible = not (WindowInfo.DisableSearch or false),
@@ -13161,7 +13180,7 @@ function Library:CreateWindow(WindowInfo)
                 IsNormal = false,
                 LockSize = false,
                 Visible = false,
-                Title = "WARNING",
+                Title = "警告",
                 Text = "",
             },
 
@@ -14693,7 +14712,7 @@ function Library:CreateWindow(WindowInfo)
 
             local Box = New("TextBox", {
                 BackgroundColor3 = "MainColor",
-                PlaceholderText = "Key",
+                PlaceholderText = "按键",
                 Size = UDim2.new(1, -71, 1, 0),
                 TextSize = 14,
                 TextXAlignment = Enum.TextXAlignment.Left,
@@ -14735,7 +14754,7 @@ function Library:CreateWindow(WindowInfo)
                 BackgroundColor3 = "MainColor",
                 Position = UDim2.fromScale(1, 0),
                 Size = UDim2.new(0, 63, 1, 0),
-                Text = "Execute",
+                Text = "执行",
                 TextSize = 14,
                 TextTransparency = 0.4,
                 Parent = Holder,
@@ -15892,13 +15911,13 @@ function Library:CreateWindow(WindowInfo)
     end
 
     if Library.IsMobile then
-        local ToggleButton = Library:AddDraggableButton("Toggle", function()
+        local ToggleButton = Library:AddDraggableButton("切换", function()
             Library:Toggle()
         end, true)
 
-        local LockButton = Library:AddDraggableButton("Lock", function(self)
+        local LockButton = Library:AddDraggableButton("锁定", function(self)
             Library.CantDragForced = not Library.CantDragForced
-            self:SetText(Library.CantDragForced and "Unlock" or "Lock")
+            self:SetText(Library.CantDragForced and "解锁" or "锁定")
         end, true)
 
         if WindowInfo.MobileButtonsSide == "Right" then
@@ -16295,7 +16314,7 @@ function Library:CreateLoading(LoadingInfo)
 
     
     local ErrorFrame = New("Frame", {
-        Name = "Error",
+        Name = "错误",
         BackgroundTransparency = 1,
         Position = UDim2.fromOffset(0, 49),
         Size = UDim2.new(1, 0, 1, -49),
@@ -16308,7 +16327,7 @@ function Library:CreateLoading(LoadingInfo)
         BackgroundTransparency = 1,
         Position = UDim2.fromOffset(15, 15),
         Size = UDim2.new(1, -30, 0, 18),
-        Text = "Error",
+        Text = "错误",
         TextColor3 = "RedColor",
         TextSize = 18,
         TextXAlignment = Enum.TextXAlignment.Left,
@@ -16319,7 +16338,7 @@ function Library:CreateLoading(LoadingInfo)
         BackgroundTransparency = 1,
         Position = UDim2.fromOffset(15, 39),
         Size = UDim2.new(1, -30, 1, -90),
-        Text = "Error Message",
+        Text = "错误信息",
         TextSize = 14,
         TextTransparency = 0.2,
         TextWrapped = true,
@@ -16854,10 +16873,12 @@ local ThemeManager = {
 
     BuiltInThemes = {
         ["Halloween!!"] = {
+            [3] = "万圣节",
             0,
-            { FontColor = "f6ead9", MainColor = "17111c", AccentColor = "ff7a18", BackgroundColor = "0d0a10", OutlineColor = "33243d", FontFace = "Roboto", BackgroundImage = "https://gitlab.com/therevasssets/revenant/-/raw/main/assets/RFB" },
+            { FontColor = "f6ead9", MainColor = "17111c", AccentColor = "ff7a18", BackgroundColor = "0d0a10", OutlineColor = "33243d", FontFace = "Roboto", BackgroundImage = "" },
         },
         ["Revenant"] = {
+            [3] = "亡灵",
             1,
             { FontColor = "ffffff", MainColor = "131519", AccentColor = "ffffff", BackgroundColor = "0f1112", OutlineColor = "282828", FontFace = "Roboto", BackgroundImage = "" },
         },
@@ -16865,282 +16886,352 @@ local ThemeManager = {
         
         
         ["Normal Obsidian"] = {
+            [3] = "经典黑曜石",
             2,
             { FontColor = "ffffff", MainColor = "191919", AccentColor = "7d55ff", BackgroundColor = "0f0f0f", OutlineColor = "282828", FontFace = "Roboto", BackgroundImage = "" },
         },
         ["Old Revenant."] = {
+            [3] = "旧版亡灵",
             3,
             { FontColor = "ffffff", MainColor = "191919", AccentColor = "a2a2a2", BackgroundColor = "000000", OutlineColor = "282828", FontFace = "Roboto", BackgroundImage = "" },
         },
         ["Aurora"] = {
+            [3] = "极光",
             4,
             { FontColor = "e0f7fa", MainColor = "2b303b", AccentColor = "81a1c1", BackgroundColor = "1c222b", OutlineColor = "3e4755", FontFace = "Roboto", BackgroundImage = "" },
         },
         ["BBot"] = {
+            [3] = "蓝紫终端",
             5,
             { FontColor = "ffffff", MainColor = "1e1e1e", AccentColor = "7e48a3", BackgroundColor = "232323", OutlineColor = "141414", FontFace = "Roboto", BackgroundImage = "" },
         },
         ["Berry Smoothie"] = {
+            [3] = "莓果冰沙",
             6,
             { FontColor = "ffffff", MainColor = "722f37", AccentColor = "d36ba6", BackgroundColor = "40102b", OutlineColor = "703060", FontFace = "Roboto", BackgroundImage = "" },
         },
         ["Buttercup"] = {
+            [3] = "金凤花",
             7,
             { FontColor = "ffffff", MainColor = "967011", AccentColor = "ffeb3b", BackgroundColor = "3a301a", OutlineColor = "7a6d28", FontFace = "Roboto", BackgroundImage = "" },
         },
         ["Candy Cane"] = {
+            [3] = "拐杖糖",
             8,
             { FontColor = "000000", MainColor = "ff9191", AccentColor = "ec3737", BackgroundColor = "fccbcb", OutlineColor = "b49797", FontFace = "Roboto", BackgroundImage = "" },
         },
         ["Candy Pop"] = {
+            [3] = "糖果汽水",
             9,
             { FontColor = "ffffff", MainColor = "5e2e65", AccentColor = "00e6e6", BackgroundColor = "1c002a", OutlineColor = "4a0044", FontFace = "Roboto", BackgroundImage = "" },
         },
         ["Canyon Clay"] = {
+            [3] = "峡谷红陶",
             10,
             { FontColor = "ffffff", MainColor = "7f5539", AccentColor = "d78e6c", BackgroundColor = "3a2117", OutlineColor = "6c4a3b", FontFace = "Roboto", BackgroundImage = "" },
         },
         ["Catppuccin"] = {
+            [3] = "卡布奇诺",
             11,
             { FontColor = "d9e0ee", MainColor = "302d41", AccentColor = "f5c2e7", BackgroundColor = "1e1e2e", OutlineColor = "575268", FontFace = "Roboto", BackgroundImage = "" },
         },
         ["Celestial"] = {
+            [3] = "星空",
             12,
             { FontColor = "eaeaf2", MainColor = "1f1c3c", AccentColor = "7986cb", BackgroundColor = "0b0928", OutlineColor = "362e61", FontFace = "Roboto", BackgroundImage = "" },
         },
         ["Copper Canyon"] = {
+            [3] = "铜色峡谷",
             13,
             { FontColor = "ffffff", MainColor = "7c2d12", AccentColor = "ff7043", BackgroundColor = "38190a", OutlineColor = "5c321d", FontFace = "Roboto", BackgroundImage = "" },
         },
         ["Crimson Tide"] = {
+            [3] = "赤色潮汐",
             14,
             { FontColor = "ffffff", MainColor = "5a0000", AccentColor = "ff1744", BackgroundColor = "330000", OutlineColor = "990000", FontFace = "Roboto", BackgroundImage = "" },
         },
         ["Cyberpunk"] = {
+            [3] = "赛博朋克",
             15,
             { FontColor = "f9f9f9", MainColor = "262335", AccentColor = "00ff9f", BackgroundColor = "1a1a2e", OutlineColor = "413c5e", FontFace = "Roboto", BackgroundImage = "" },
         },
         ["Deep Space"] = {
+            [3] = "深空",
             16,
             { FontColor = "cfd8dc", MainColor = "0d1b2a", AccentColor = "4e8bbf", BackgroundColor = "081421", OutlineColor = "284259", FontFace = "Roboto", BackgroundImage = "" },
         },
         ["Desert Storm"] = {
+            [3] = "沙漠风暴",
             17,
             { FontColor = "ffffff", MainColor = "c6ab80", AccentColor = "af8e6a", BackgroundColor = "372d26", OutlineColor = "6b5541", FontFace = "Roboto", BackgroundImage = "" },
         },
         ["Dracula"] = {
+            [3] = "德古拉",
             18,
             { FontColor = "f8f8f2", MainColor = "44475a", AccentColor = "ff79c6", BackgroundColor = "282a36", OutlineColor = "6272a4", FontFace = "Roboto", BackgroundImage = "" },
         },
         ["Dust Bowl"] = {
+            [3] = "沙尘盆地",
             19,
             { FontColor = "ffffff", MainColor = "5c4537", AccentColor = "b2957e", BackgroundColor = "3b3024", OutlineColor = "7a6d58", FontFace = "Roboto", BackgroundImage = "" },
         },
         ["Dusty Rose"] = {
+            [3] = "灰调玫瑰",
             20,
             { FontColor = "ffffff", MainColor = "ba6b6c", AccentColor = "f4a7b9", BackgroundColor = "3d1f23", OutlineColor = "70454b", FontFace = "Roboto", BackgroundImage = "" },
         },
         ["Electric Lime"] = {
+            [3] = "电光青柠",
             21,
             { FontColor = "d4d4d4", MainColor = "454f09", AccentColor = "aeea00", BackgroundColor = "222222", OutlineColor = "4f4f4f", FontFace = "Roboto", BackgroundImage = "" },
         },
         ["Emerald Dream"] = {
+            [3] = "翡翠梦境",
             22,
             { FontColor = "e0ffe0", MainColor = "014421", AccentColor = "33cc99", BackgroundColor = "001a10", OutlineColor = "02442b", FontFace = "Roboto", BackgroundImage = "" },
         },
         ["Fatality"] = {
+            [3] = "终结",
             23,
             { FontColor = "ffffff", MainColor = "1e1842", AccentColor = "c50754", BackgroundColor = "191335", OutlineColor = "3c355d", FontFace = "Roboto", BackgroundImage = "" },
         },
         ["Flame Ember"] = {
+            [3] = "余烬烈焰",
             24,
             { FontColor = "ffffff", MainColor = "692423", AccentColor = "ff7043", BackgroundColor = "2e0005", OutlineColor = "8b3a3a", FontFace = "Roboto", BackgroundImage = "" },
         },
         ["Forest Mist"] = {
+            [3] = "森林薄雾",
             25,
             { FontColor = "dcedc8", MainColor = "2e4d2b", AccentColor = "a8d5ba", BackgroundColor = "1b2f20", OutlineColor = "3c5a3d", FontFace = "Roboto", BackgroundImage = "" },
         },
         ["Glacial"] = {
+            [3] = "冰川",
             26,
             { FontColor = "e0f7fa", MainColor = "2c3e50", AccentColor = "4dd0e1", BackgroundColor = "1a2d3a", OutlineColor = "2c5f58", FontFace = "Roboto", BackgroundImage = "" },
         },
         ["Goldenrod"] = {
+            [3] = "金菊黄",
             27,
             { FontColor = "ffffff", MainColor = "8c7a3f", AccentColor = "ffd54f", BackgroundColor = "4c3d20", OutlineColor = "6e5e3a", FontFace = "Roboto", BackgroundImage = "" },
         },
         ["Graphite"] = {
+            [3] = "石墨",
             28,
             { FontColor = "d1d1d1", MainColor = "2b2b2b", AccentColor = "777777", BackgroundColor = "1a1a1a", OutlineColor = "444444", FontFace = "Roboto", BackgroundImage = "" },
         },
         ["Gruvbox"] = {
+            [3] = "灰调复古",
             29,
             { FontColor = "ebdbb2", MainColor = "3c3836", AccentColor = "fb4934", BackgroundColor = "282828", OutlineColor = "504945", FontFace = "Roboto", BackgroundImage = "" },
         },
         ["Iceberg"] = {
+            [3] = "冰山",
             30,
             { FontColor = "ffffff", MainColor = "1e3d59", AccentColor = "00b7ff", BackgroundColor = "12273d", OutlineColor = "30577a", FontFace = "Roboto", BackgroundImage = "" },
         },
         ["Inferno"] = {
+            [3] = "炼狱",
             31,
             { FontColor = "ffffff", MainColor = "4b000f", AccentColor = "ff3300", BackgroundColor = "2e0005", OutlineColor = "7a0011", FontFace = "Roboto", BackgroundImage = "" },
         },
         ["Jade Forest"] = {
+            [3] = "玉林",
             32,
             { FontColor = "f0fff0", MainColor = "0a2c2a", AccentColor = "3bbf9b", BackgroundColor = "081d1b", OutlineColor = "205752", FontFace = "Roboto", BackgroundImage = "" },
         },
         ["Jester"] = {
+            [3] = "小丑",
             33,
             { FontColor = "ffffff", MainColor = "242424", AccentColor = "db4467", BackgroundColor = "1c1c1c", OutlineColor = "373737", FontFace = "Roboto", BackgroundImage = "" },
         },
         ["Lavender Mist"] = {
+            [3] = "薰衣草雾",
             34,
             { FontColor = "faf0ff", MainColor = "7e5a9b", AccentColor = "cba5e6", BackgroundColor = "44275a", OutlineColor = "71538c", FontFace = "Roboto", BackgroundImage = "" },
         },
         ["Lunar Eclipse"] = {
+            [3] = "月蚀",
             35,
             { FontColor = "dcdcdc", MainColor = "2c2933", AccentColor = "908ec3", BackgroundColor = "1b1823", OutlineColor = "3e3a4e", FontFace = "Roboto", BackgroundImage = "" },
         },
         ["Marshmallow"] = {
+            [3] = "棉花糖",
             36,
             { FontColor = "000000", MainColor = "eccbea", AccentColor = "f8bbd0", BackgroundColor = "e4dfdf", OutlineColor = "96a8d7", FontFace = "Roboto", BackgroundImage = "" },
         },
         ["Material"] = {
+            [3] = "材质派",
             37,
             { FontColor = "eeffff", MainColor = "212121", AccentColor = "82aaff", BackgroundColor = "151515", OutlineColor = "424242", FontFace = "Roboto", BackgroundImage = "" },
         },
         ["Midnight Blue"] = {
+            [3] = "午夜蓝",
             38,
             { FontColor = "e0eaf2", MainColor = "1a2634", AccentColor = "5c8fc0", BackgroundColor = "0f1221", OutlineColor = "2c3e50", FontFace = "Roboto", BackgroundImage = "" },
         },
         ["Midnight Orchid"] = {
+            [3] = "午夜兰花",
             39,
             { FontColor = "f8f8ff", MainColor = "2a1e3b", AccentColor = "b86bbe", BackgroundColor = "1a0c27", OutlineColor = "4f2b55", FontFace = "Roboto", BackgroundImage = "" },
         },
         ["Mint"] = {
+            [3] = "薄荷",
             40,
             { FontColor = "ffffff", MainColor = "242424", AccentColor = "3db488", BackgroundColor = "1c1c1c", OutlineColor = "373737", FontFace = "Roboto", BackgroundImage = "" },
         },
         ["Mint Chocolate"] = {
+            [3] = "薄荷巧克力",
             41,
             { FontColor = "ffffff", MainColor = "2e4639", AccentColor = "a1c349", BackgroundColor = "1c2f24", OutlineColor = "3c5a4e", FontFace = "Roboto", BackgroundImage = "" },
         },
         ["Mocha Mist"] = {
+            [3] = "摩卡雾",
             42,
             { FontColor = "f5e1da", MainColor = "6b4c3b", AccentColor = "bc987e", BackgroundColor = "3c2b24", OutlineColor = "795b48", FontFace = "Roboto", BackgroundImage = "" },
         },
         ["Monokai"] = {
+            [3] = "莫诺凯",
             43,
             { FontColor = "f8f8f2", MainColor = "272822", AccentColor = "f92672", BackgroundColor = "1e1f1c", OutlineColor = "49483e", FontFace = "Roboto", BackgroundImage = "" },
         },
         ["Mystic Violet"] = {
+            [3] = "神秘紫罗兰",
             44,
             { FontColor = "f0e6ff", MainColor = "3e1f47", AccentColor = "ba68c8", BackgroundColor = "2a102f", OutlineColor = "5c3d63", FontFace = "Roboto", BackgroundImage = "" },
         },
         ["Neon Jungle"] = {
+            [3] = "霓虹丛林",
             45,
             { FontColor = "ccff99", MainColor = "1a1f27", AccentColor = "00ff88", BackgroundColor = "0d0d0d", OutlineColor = "2a2a2a", FontFace = "Roboto", BackgroundImage = "" },
         },
         ["Nord"] = {
+            [3] = "北欧极夜",
             46,
             { FontColor = "eceff4", MainColor = "3b4252", AccentColor = "88c0d0", BackgroundColor = "2e3440", OutlineColor = "4c566a", FontFace = "Roboto", BackgroundImage = "" },
         },
         ["Ocean Breeze"] = {
+            [3] = "海风",
             47,
             { FontColor = "e0f7fa", MainColor = "005377", AccentColor = "00bcd4", BackgroundColor = "002d3a", OutlineColor = "014f62", FontFace = "Roboto", BackgroundImage = "" },
         },
         ["Ocean Pearl"] = {
+            [3] = "海洋珍珠",
             48,
             { FontColor = "ffffff", MainColor = "036865", AccentColor = "42eecf", BackgroundColor = "002f3a", OutlineColor = "014f52", FontFace = "Roboto", BackgroundImage = "" },
         },
         ["Oceanic Next"] = {
+            [3] = "深海蓝调",
             49,
             { FontColor = "d8dee9", MainColor = "1b2b34", AccentColor = "6699cc", BackgroundColor = "16232a", OutlineColor = "343d46", FontFace = "Roboto", BackgroundImage = "" },
         },
         ["One Dark"] = {
+            [3] = "暗夜一号",
             50,
             { FontColor = "abb2bf", MainColor = "282c34", AccentColor = "c678dd", BackgroundColor = "21252b", OutlineColor = "5c6370", FontFace = "Roboto", BackgroundImage = "" },
         },
         ["Opal Glow"] = {
+            [3] = "蛋白石辉光",
             51,
             { FontColor = "f0fff0", MainColor = "567572", AccentColor = "b2f5ea", BackgroundColor = "213837", OutlineColor = "2b4f3c", FontFace = "Roboto", BackgroundImage = "" },
         },
         ["Peach Fuzz"] = {
+            [3] = "蜜桃绒",
             52,
             { FontColor = "ffffff", MainColor = "b6846b", AccentColor = "ff8e72", BackgroundColor = "3a2525", OutlineColor = "7f5a56", FontFace = "Roboto", BackgroundImage = "" },
         },
         ["Peacock Feather"] = {
+            [3] = "孔雀羽",
             53,
             { FontColor = "ffffff", MainColor = "004953", AccentColor = "00bcd4", BackgroundColor = "002f3d", OutlineColor = "006370", FontFace = "Roboto", BackgroundImage = "" },
         },
         ["Peanut Butter"] = {
+            [3] = "花生酱",
             54,
             { FontColor = "ffffff", MainColor = "e1a95f", AccentColor = "ffca80", BackgroundColor = "2b221a", OutlineColor = "7a6326", FontFace = "Roboto", BackgroundImage = "" },
         },
         ["Quartz"] = {
+            [3] = "石英",
             55,
             { FontColor = "ffffff", MainColor = "232330", AccentColor = "426e87", BackgroundColor = "1d1b26", OutlineColor = "27232f", FontFace = "Roboto", BackgroundImage = "" },
         },
         ["Retro Wave"] = {
+            [3] = "复古浪潮",
             56,
             { FontColor = "f0f8ff", MainColor = "2d033b", AccentColor = "ff77ff", BackgroundColor = "1a0126", OutlineColor = "5b114b", FontFace = "Roboto", BackgroundImage = "" },
         },
         ["Rose Quartz"] = {
+            [3] = "玫瑰石英",
             57,
             { FontColor = "ffffff", MainColor = "c48793", AccentColor = "f7cad0", BackgroundColor = "2f1b24", OutlineColor = "6f4b57", FontFace = "Roboto", BackgroundImage = "" },
         },
         ["Sandstone"] = {
+            [3] = "砂岩",
             58,
             { FontColor = "2e1e1e", MainColor = "c2b280", AccentColor = "d7b889", BackgroundColor = "f5e6ca", OutlineColor = "a79876", FontFace = "Roboto", BackgroundImage = "" },
         },
         ["Slate Grey"] = {
+            [3] = "板岩灰",
             59,
             { FontColor = "ffffff", MainColor = "607d8b", AccentColor = "b0bec5", BackgroundColor = "263238", OutlineColor = "546e7a", FontFace = "Roboto", BackgroundImage = "" },
         },
         ["Solar Flare"] = {
+            [3] = "太阳耀斑",
             60,
             { FontColor = "ffffff", MainColor = "4e1609", AccentColor = "ff7043", BackgroundColor = "2b0702", OutlineColor = "6f1e07", FontFace = "Roboto", BackgroundImage = "" },
         },
         ["Solarized"] = {
+            [3] = "日光色调",
             61,
             { FontColor = "839496", MainColor = "073642", AccentColor = "cb4b16", BackgroundColor = "002b36", OutlineColor = "586e75", FontFace = "Roboto", BackgroundImage = "" },
         },
         ["Steel Blue"] = {
+            [3] = "钢青",
             62,
             { FontColor = "f1f5f9", MainColor = "1f3a58", AccentColor = "607d8b", BackgroundColor = "152439", OutlineColor = "2c526d", FontFace = "Roboto", BackgroundImage = "" },
         },
         ["Stormy Night"] = {
+            [3] = "暴风夜",
             63,
             { FontColor = "e0e0e0", MainColor = "2f3e4e", AccentColor = "627d98", BackgroundColor = "1b232f", OutlineColor = "34455b", FontFace = "Roboto", BackgroundImage = "" },
         },
         ["Sunrise Glow"] = {
+            [3] = "日出辉光",
             64,
             { FontColor = "ffffff", MainColor = "ad6700", AccentColor = "ffeb99", BackgroundColor = "3d281e", OutlineColor = "8c5200", FontFace = "Roboto", BackgroundImage = "" },
         },
         ["Sunset Horizon"] = {
+            [3] = "日落地平线",
             65,
             { FontColor = "ffffff", MainColor = "9f4f48", AccentColor = "fbc687", BackgroundColor = "2a0f0f", OutlineColor = "7b3f39", FontFace = "Roboto", BackgroundImage = "" },
         },
         ["Tokyo Night"] = {
+            [3] = "东京之夜",
             66,
             { FontColor = "ffffff", MainColor = "191925", AccentColor = "6759b3", BackgroundColor = "16161f", OutlineColor = "323232", FontFace = "Roboto", BackgroundImage = "" },
         },
         ["Tropical Punch"] = {
+            [3] = "热带果酒",
             67,
             { FontColor = "ffffff", MainColor = "e96c98", AccentColor = "ffc200", BackgroundColor = "4d2b47", OutlineColor = "e83296", FontFace = "Roboto", BackgroundImage = "" },
         },
         ["Twilight"] = {
+            [3] = "暮光",
             68,
             { FontColor = "e0e6f8", MainColor = "121212", AccentColor = "9fa8da", BackgroundColor = "0a0a0a", OutlineColor = "333444", FontFace = "Roboto", BackgroundImage = "" },
         },
         ["Ubuntu"] = {
+            [3] = "乌班图",
             69,
             { FontColor = "ffffff", MainColor = "3e3e3e", AccentColor = "e2581e", BackgroundColor = "323232", OutlineColor = "191919", FontFace = "Roboto", BackgroundImage = "" },
         },
         ["Vintage Paper"] = {
+            [3] = "复古纸张",
             70,
             { FontColor = "2f2f2f", MainColor = "d8cfc4", AccentColor = "b89c73", BackgroundColor = "f3e9d2", OutlineColor = "a68f7c", FontFace = "Roboto", BackgroundImage = "" },
         },
         ["Vodka Lime"] = {
+            [3] = "伏特加青柠",
             71,
             { FontColor = "70a634", MainColor = "6f8740", AccentColor = "396b07", BackgroundColor = "2a2a2a", OutlineColor = "4f4f4f", FontFace = "Roboto", BackgroundImage = "" },
         },
@@ -17285,7 +17376,7 @@ function ThemeManager:CheckFolderTree()
 end
 
 function ThemeManager:SetFolder(Folder: string)
-    assert(IsValidFolderPath(Folder), "Invalid path provided")
+    assert(IsValidFolderPath(Folder), "路径无效")
 
     ThemeManager.Folder = Folder
     ThemeManager:BuildFolderTree()
@@ -17301,7 +17392,7 @@ function ThemeManager:ReloadCustomThemes()
     pcall(makefolder, SettingsPath)
     local SuccessList, Files = pcall(listfiles, SettingsPath)
     if not (SuccessList and typeof(Files) == "table") then
-        ThemeManager.Library:Notify(string.format("Failed to load theme list: %s", tostring(Files)))
+        ThemeManager.Library:Notify(string.format("加载主题列表失败：%s", tostring(Files)))
         return {}
     end
 
@@ -17359,16 +17450,16 @@ end
 
 function ThemeManager:SaveCustomTheme(ThemeName: string): any
     if IsStringEmpty(ThemeName) then
-        return false, "Invalid theme name provided"
+        return false, "主题名称无效"
     end
 
     if string.lower(ThemeName) == "default" then
-        return false, "Invalid theme name provided"
+        return false, "主题名称无效"
     end
 
     local ThemePath = GetThemePath(ThemeName)
     if ThemePath == false then
-        return false, "Invalid theme name provided"
+        return false, "主题名称无效"
     end
 
     ThemeManager:CheckFolderTree()
@@ -17381,7 +17472,7 @@ function ThemeManager:SaveCustomTheme(ThemeName: string): any
 
     local SuccessWrite, ErrorMessage = pcall(writefile, ThemePath, EncodedData)
     if not SuccessWrite then
-        return false, "Failed to write theme file: " .. tostring(ErrorMessage)
+        return false, "写入主题文件失败：" .. tostring(ErrorMessage)
     end
 
     return true
@@ -17389,17 +17480,17 @@ end
 
 function ThemeManager:Delete(ThemeName: string): (boolean | string?)
     if IsStringEmpty(ThemeName) then
-        return false, "No theme is selected"
+        return false, "未选择主题"
     end
 
     local ThemePath = GetThemePath(ThemeName)
     if ThemePath == false or not isfile(ThemePath) then
-        return false, "Theme file does not exist"
+        return false, "主题文件不存在"
     end
 
     local SuccessDelete, ErrorMessage = pcall(delfile, ThemePath)
     if not SuccessDelete then
-        return false, "Failed to delete theme file: " .. tostring(ErrorMessage)
+        return false, "删除主题文件失败：" .. tostring(ErrorMessage)
     end
 
     if ThemeName == ThemeManager.DefaultThemeName then
@@ -17415,11 +17506,11 @@ function ThemeManager:GetDefaultTheme(): (string, boolean, string?)
 
     local DefaultThemePath = GetDefaultThemePath()
     if DefaultThemePath == false then
-        return "none", false, "Invalid path provided"
+        return "none", false, "路径无效"
     end
 
     if not isfile(DefaultThemePath) then
-        return "none", false, "Default theme is not set"
+        return "none", false, "未设置默认主题"
     end
 
     local SuccessRead, DefaultThemeName = pcall(readfile, DefaultThemePath)
@@ -17429,7 +17520,7 @@ function ThemeManager:GetDefaultTheme(): (string, boolean, string?)
 
     local ConfigExists = DoesThemeExist(DefaultThemeName, true)
     if not ConfigExists then
-        return "none", false, "Theme file not found"
+        return "none", false, "主题文件未找到"
     end
 
     ThemeManager.DefaultThemeName = DefaultThemeName
@@ -17437,8 +17528,8 @@ function ThemeManager:GetDefaultTheme(): (string, boolean, string?)
 end
 
 function ThemeManager:SetDefaultTheme(Theme: any)
-    assert(ThemeManager.Library, "Library is not set, call ThemeManager:SetLibrary(Library) first.")
-    assert(not ThemeManager.AppliedToTab, "Cannot set default theme after applying ThemeManager to a tab!")
+    assert(ThemeManager.Library, "库未设置，请先调用 ThemeManager:SetLibrary(Library)。")
+    assert(not ThemeManager.AppliedToTab, "已将 ThemeManager 应用到标签页，无法再设置默认主题！")
 
     local Library = ThemeManager.Library
     local DefaultThemeData = ThemeManager.BuiltInThemes["Default"][2]
@@ -17496,18 +17587,18 @@ end
 
 function ThemeManager:SaveDefault(ThemeName: string): (boolean, string?)
     if IsStringEmpty(ThemeName) then
-        return false, "No theme is selected"
+        return false, "未选择主题"
     end
 
     ThemeManager:CheckFolderTree()
 
     local DefaultThemePath = GetDefaultThemePath()
     if DefaultThemePath == false then
-        return false, "Invalid path provided"
+        return false, "路径无效"
     end
 
     if not DoesThemeExist(ThemeName, true) then
-        return false, "Theme does not exist"
+        return false, "主题不存在"
     end
 
     local SuccessWrite, ErrorMessage = pcall(writefile, DefaultThemePath, ThemeName)
@@ -17522,8 +17613,8 @@ end
 function ThemeManager:LoadDefault()
     local ThemeName, Success, FetchErrorMessage = ThemeManager:GetDefaultTheme()
     if not Success or FetchErrorMessage then
-        if FetchErrorMessage ~= "Default theme is not set" then
-            ThemeManager.Library:Notify(string.format("Failed to apply default theme: %s", FetchErrorMessage))
+        if FetchErrorMessage ~= "未设置默认主题" then
+            ThemeManager.Library:Notify(string.format("应用默认主题失败：%s", FetchErrorMessage))
         else
             
             pcall(function()
@@ -17541,11 +17632,11 @@ function ThemeManager:LoadDefault()
 
     local SuccessLoad, LoadErrorMessage = ThemeManager:ApplyTheme(ThemeName)
     if not SuccessLoad then
-        ThemeManager.Library:Notify(string.format("Failed to apply default theme: %s", LoadErrorMessage))
+        ThemeManager.Library:Notify(string.format("应用默认主题失败：%s", LoadErrorMessage))
         return
     end
 
-    ThemeManager.Library:Notify(string.format("Successfully applied default theme %q", ThemeName))
+    ThemeManager.Library:Notify(string.format("已应用默认主题 %q", ThemeManager:GetDisplayName(ThemeName)))
 end
 
 function ThemeManager:DeleteDefaultTheme(): (boolean, string?)
@@ -17553,11 +17644,11 @@ function ThemeManager:DeleteDefaultTheme(): (boolean, string?)
 
     local DefaultThemePath = GetDefaultThemePath()
     if DefaultThemePath == false then
-        return false, "Invalid path provided"
+        return false, "路径无效"
     end
 
     if not isfile(DefaultThemePath) then
-        return false, "Default theme is not set"
+        return false, "未设置默认主题"
     end
 
     local SuccessDelete, ErrorMessage = pcall(delfile, DefaultThemePath)
@@ -17582,8 +17673,8 @@ function ThemeManager:GetContrastReport(): { Ratio: number, PairName: string, Pa
 
     local FontColor = FontColorOption.Value
     local Surfaces = {
-        { Name = "font color vs. background color", Color = BackgroundColorOption.Value },
-        { Name = "font color vs. main color", Color = MainColorOption.Value },
+        { Name = "字体色 与 背景色", Color = BackgroundColorOption.Value },
+        { Name = "字体色 与 主色", Color = MainColorOption.Value },
     }
 
     local WorstRatio, WorstName = math.huge, ""
@@ -17617,13 +17708,13 @@ function ThemeManager:UpdateContrastWarning()
     end
 
     if Report.Passes then
-        ContrastLabel:SetText(string.format("Contrast check: good (%.1f:1)", Report.Ratio))
+        ContrastLabel:SetText(string.format("对比度检查：良好（%.1f:1）", Report.Ratio))
 
         TextLabel.TextColor3 = Library.Scheme.FontColor
         Library.Registry[TextLabel].TextColor3 = "FontColor"
     else
         ContrastLabel:SetText(string.format(
-            "Low contrast (%.1f:1) between %s. Aim for at least %.1f:1 so text stays readable.",
+            "对比度偏低（%.1f:1，涉及 %s）。建议至少 %.1f:1，文字才清晰可读。",
             Report.Ratio, Report.PairName, ContrastWarnThreshold
         ))
 
@@ -17632,9 +17723,9 @@ function ThemeManager:UpdateContrastWarning()
 
         if not ThemeManager.ContrastWasPoor then
             Library:Notify({
-                Title = "Low contrast theme",
+                Title = "低对比度主题",
                 Description = string.format(
-                    "Your %s has a contrast ratio of %.1f:1, below the recommended %.1f:1. Text may be hard to read.",
+                    "%s 的对比度为 %.1f:1，低于建议的 %.1f:1，文字可能难以辨认。",
                     Report.PairName, Report.Ratio, ContrastWarnThreshold
                 ),
                 Time = 10,
@@ -17664,7 +17755,7 @@ end
 
 function ThemeManager:ApplyThemeData(ThemeData: any): (boolean, string?)
     if typeof(ThemeData) ~= "table" then
-        return false, "Invalid theme data"
+        return false, "主题数据无效"
     end
 
     local Library = ThemeManager.Library
@@ -17707,14 +17798,14 @@ end
 
 function ThemeManager:ApplyTheme(ThemeName: string)
     if IsStringEmpty(ThemeName) then
-        return false, "No theme is selected"
+        return false, "未选择主题"
     end
 
     local CustomThemeData = ThemeManager:GetCustomTheme(ThemeName)
     local Data = CustomThemeData or ThemeManager.BuiltInThemes[ThemeName]
     
     if not Data then
-        return false, "Theme not found"
+        return false, "主题未找到"
     end
     
     local ThemeData = CustomThemeData or Data[2]
@@ -17735,12 +17826,12 @@ end
 
 function ThemeManager:LoadJSON(Content: string): (boolean, string?)
     if IsStringEmpty(Content) then
-        return false, "No JSON provided"
+        return false, "未提供 JSON"
     end
 
     local SuccessDecode, Decoded = pcall(HttpService.JSONDecode, HttpService, Content)
     if not SuccessDecode or not IsValidThemeData(Decoded) then
-        return false, "Failed to decode theme data"
+        return false, "主题数据解析失败"
     end
 
     return ThemeManager:ApplyThemeData(Decoded)
@@ -17768,7 +17859,7 @@ local function ShowDialog(
 
         FooterButtons = {
             Cancel = {
-                Title = "Cancel",
+                Title = "取消",
                 Variant = "Ghost",
                 Order = 1,
                 Callback = function(Dialog)
@@ -17789,8 +17880,17 @@ local function ShowDialog(
     })
 end
 
+function ThemeManager:GetDisplayName(Name)
+    local Entry = ThemeManager.BuiltInThemes[Name]
+    if Entry and type(Entry[3]) == "string" then
+        return Entry[3]
+    end
+
+    return Name
+end
+
 function ThemeManager:CreateThemeManager(Themesbox: any)
-    assert(ThemeManager.Library, "Library is not set, call ThemeManager:SetLibrary(Library) first.")
+    assert(ThemeManager.Library, "库未设置，请先调用 ThemeManager:SetLibrary(Library)。")
 
     local BuiltInThemesNames = {}
     for Name, _ThemeData in ThemeManager.BuiltInThemes do
@@ -17808,7 +17908,7 @@ function ThemeManager:CreateThemeManager(Themesbox: any)
     local function RefreshDefaultThemeLabel()
         local DefaultThemeName, _Success, _ErrorMessage = ThemeManager:GetDefaultTheme()
 
-        DefaultThemeLabel:SetText(string.format("Current default theme: %s", DefaultThemeName))
+        DefaultThemeLabel:SetText(string.format("当前默认主题：%s", ThemeManager:GetDisplayName(DefaultThemeName)))
         if CustomThemeList then RefreshList() end
     end
 
@@ -17824,20 +17924,20 @@ function ThemeManager:CreateThemeManager(Themesbox: any)
         return ThemeManager.Library.Options[SchemeIndex]
     end
 
-    local BackgroundColor = CreateColorOption("Background color", "BackgroundColor")
-    local MainColor = CreateColorOption("Main color", "MainColor")
-    local AccentColor = CreateColorOption("Accent color", "AccentColor")
-    local OutlineColor = CreateColorOption("Outline color", "OutlineColor")
-    local FontColor = CreateColorOption("Font color", "FontColor")
+    local BackgroundColor = CreateColorOption("背景颜色", "BackgroundColor")
+    local MainColor = CreateColorOption("主色", "MainColor")
+    local AccentColor = CreateColorOption("强调色", "AccentColor")
+    local OutlineColor = CreateColorOption("描边颜色", "OutlineColor")
+    local FontColor = CreateColorOption("字体颜色", "FontColor")
 
     
     ThemeManager.ContrastLabel = Themesbox:AddLabel({
-        Text = "Contrast check: n/a",
+        Text = "对比度检查：不适用",
         DoesWrap = true,
     })
 
     Themesbox:AddDropdown("FontFace", {
-        Text = "Font Face",
+        Text = "字体",
         Default = "Roboto",
         
         Values = { "BuilderSans", "Code", "Fantasy", "Gotham", "Jura", "Roboto", "RobotoMono", "SourceSans" },
@@ -17846,7 +17946,7 @@ function ThemeManager:CreateThemeManager(Themesbox: any)
     })
     
     Themesbox:AddInput("BackgroundImage", { 
-        Text = "Background Image",
+        Text = "背景图片",
 
         Default = "",
         Finished = true,
@@ -17857,51 +17957,53 @@ function ThemeManager:CreateThemeManager(Themesbox: any)
     Themesbox:AddDivider()
 
     Themesbox:AddDropdown("ThemeManager_ThemeList", { 
-        Text = "Theme list", 
+        Text = "主题列表", 
 
         Values = BuiltInThemesNames,
         AllowNull = true,
         Multi = false,
 
         FormatDisplayValue = function(Value: any)
+            local Shown = ThemeManager:GetDisplayName(Value)
             if Value ~= "Default" and Value == ThemeManager.DefaultThemeName then
-                return string.format("%s (default)", Value)
+                return string.format("%s（默认）", Shown)
             end
 
-            return Value
+            return Shown
         end,
         FormatListValue = function(Value: any)
+            local Shown = ThemeManager:GetDisplayName(Value)
             if Value ~= "Default" and Value == ThemeManager.DefaultThemeName then
-                return string.format("%s (default)", Value)
+                return string.format("%s（默认）", Shown)
             end
 
-            return Value
+            return Shown
         end
     })
 
-    Themesbox:AddButton("Set as default", function()
+    Themesbox:AddButton("设为默认", function()
         local ThemeName = ThemeList.Value
         ThemeManager:SaveDefault(ThemeName)
 
-        ThemeManager.Library:Notify(string.format("Successfully set default theme to %q", ThemeName))
+        ThemeManager.Library:Notify(string.format("已将默认主题设为 %q", ThemeManager:GetDisplayName(ThemeName)))
         RefreshDefaultThemeLabel()
     end)
 
     Themesbox:AddDivider()
 
     CustomThemeName = Themesbox:AddInput("ThemeManager_CustomThemeName", { 
-        Text = "Custom theme name" 
+        Text = "自定义主题名称" 
     })
 
     local function SaveThemeWithContrastCheck(Name: string, SuccessMessage: string, OnSaved: (() -> nil)?)
         local function DoSave()
             local Success, ErrorMessage = ThemeManager:SaveCustomTheme(Name)
             if not Success then
-                ThemeManager.Library:Notify(string.format("Failed to save theme %q: %s", Name, ErrorMessage))
+                ThemeManager.Library:Notify(string.format("保存主题 %q 失败：%s", ThemeManager:GetDisplayName(Name), ErrorMessage))
                 return
             end
 
-            ThemeManager.Library:Notify(string.format(SuccessMessage, Name))
+            ThemeManager.Library:Notify(string.format(SuccessMessage, ThemeManager:GetDisplayName(Name)))
             if OnSaved then OnSaved() end
         end
 
@@ -17917,26 +18019,26 @@ function ThemeManager:CreateThemeManager(Themesbox: any)
             end,
 
             "ThemeManager_LowContrastSave",
-            "Low contrast theme",
+            "低对比度主题",
             string.format(
-                "This theme has a contrast ratio of %.1f:1 between %s, below the recommended %.1f:1. Text may be hard to read. Save anyway?",
+                "该主题对比度为 %.1f:1（涉及 %s），低于建议的 %.1f:1，文字可能难以辨认。仍要保存吗？",
                 Report.Ratio, Report.PairName, ContrastWarnThreshold
             ),
 
-            "Save Anyway",
+            "仍然保存",
             DoSave
         )
     end
 
-    Themesbox:AddButton("Create theme", function()
+    Themesbox:AddButton("创建主题", function()
         local Name = CustomThemeName.Value
         if IsStringEmpty(Name) then
-            ThemeManager.Library:Notify("Theme name cannot be empty.")
+            ThemeManager.Library:Notify("主题名称不能为空。")
             return
         end
 
         if string.lower(Name) == "default" then
-            ThemeManager.Library:Notify("Invalid theme name provided.")
+            ThemeManager.Library:Notify("主题名称无效。")
             return
         end
 
@@ -17946,12 +18048,12 @@ function ThemeManager:CreateThemeManager(Themesbox: any)
             end,
 
             "ThemeManager_CreateTheme",
-            "Theme already exists",
-            string.format("A custom theme named %q already exists. Overwriting it will replace it with your current colors.", Name),
+            "主题已存在",
+            string.format("已存在名为 %q 的自定义主题，覆盖后会用当前配色替换它。", Name),
 
-            "Overwrite",
+            "覆盖",
             function()
-                SaveThemeWithContrastCheck(Name, "Successfully created theme %q", RefreshList)
+                SaveThemeWithContrastCheck(Name, "主题 %q 创建成功", RefreshList)
             end
         )
     end)
@@ -17959,7 +18061,7 @@ function ThemeManager:CreateThemeManager(Themesbox: any)
     Themesbox:AddDivider()
 
     CustomThemeList = Themesbox:AddDropdown("ThemeManager_CustomThemeList", { 
-        Text = "Custom themes",
+        Text = "自定义主题",
 
         Values = ThemeManager:ReloadCustomThemes(), 
         AllowNull = true,
@@ -17967,35 +18069,35 @@ function ThemeManager:CreateThemeManager(Themesbox: any)
 
         FormatDisplayValue = function(Value: any)
             if Value == ThemeManager.DefaultThemeName then
-                return string.format("%s (default)", Value)
+                return string.format("%s（默认）", Value)
             end
 
             return Value
         end,
         FormatListValue = function(Value: any)
             if Value == ThemeManager.DefaultThemeName then
-                return string.format("%s (default)", Value)
+                return string.format("%s（默认）", Value)
             end
 
             return Value
         end
     })
 
-    Themesbox:AddButton("Load theme", function()
+    Themesbox:AddButton("加载主题", function()
         local Name = CustomThemeList.Value
         if IsStringEmpty(Name) then
-            ThemeManager.Library:Notify("Please select a theme first.")
+            ThemeManager.Library:Notify("请先选择一个主题。")
             return
         end
 
         ThemeManager:ApplyTheme(Name)
-        ThemeManager.Library:Notify(string.format("Successfully loaded theme %q", Name))
+        ThemeManager.Library:Notify(string.format("主题 %q 加载成功", ThemeManager:GetDisplayName(Name)))
     end)
 
-    Themesbox:AddButton("Overwrite theme", function()
+    Themesbox:AddButton("覆盖主题", function()
         local Name = CustomThemeList.Value
         if IsStringEmpty(Name) then
-            ThemeManager.Library:Notify("Please select a theme first.")
+            ThemeManager.Library:Notify("请先选择一个主题。")
             return
         end
 
@@ -18005,20 +18107,20 @@ function ThemeManager:CreateThemeManager(Themesbox: any)
             end,
 
             "ThemeManager_OverwriteTheme",
-            "Overwrite theme",
-            string.format("Are you sure you want to overwrite %q with your current colors? This cannot be undone.", Name),
+            "覆盖主题",
+            string.format("确定要用当前配色覆盖 %q 吗？此操作不可撤销。", Name),
 
-            "Overwrite",
+            "覆盖",
             function()
-                SaveThemeWithContrastCheck(Name, "Successfully overwrote theme %q")
+                SaveThemeWithContrastCheck(Name, "主题 %q 覆盖成功")
             end
         )
     end)
 
-    Themesbox:AddButton("Delete theme", function()
+    Themesbox:AddButton("删除主题", function()
         local Name = CustomThemeList.Value
         if IsStringEmpty(Name) then
-            ThemeManager.Library:Notify("Please select a theme first.")
+            ThemeManager.Library:Notify("请先选择一个主题。")
             return
         end
 
@@ -18028,74 +18130,74 @@ function ThemeManager:CreateThemeManager(Themesbox: any)
             end,
 
             "ThemeManager_DeleteTheme",
-            "Delete theme",
-            string.format("Are you sure you want to delete %q? This cannot be undone.", Name),
+            "删除主题",
+            string.format("确定要删除 %q 吗？此操作不可撤销。", Name),
             
-            "Delete",
+            "删除",
             function()
                 local Success, ErrorMessage = ThemeManager:Delete(Name)
                 if not Success then
-                    ThemeManager.Library:Notify(string.format("Failed to delete theme: %s", ErrorMessage))
+                    ThemeManager.Library:Notify(string.format("删除主题失败：%s", ErrorMessage))
                     return
                 end
 
-                ThemeManager.Library:Notify(string.format("Successfully deleted theme %q", Name))
+                ThemeManager.Library:Notify(string.format("主题 %q 已删除", ThemeManager:GetDisplayName(Name)))
                 RefreshDefaultThemeLabel()
             end
         )
     end)
 
-    Themesbox:AddButton("Refresh list", RefreshList)
+    Themesbox:AddButton("刷新列表", RefreshList)
 
-    Themesbox:AddButton("Set as default", function()
+    Themesbox:AddButton("设为默认", function()
         local Name = CustomThemeList.Value
         if IsStringEmpty(Name) then
-            ThemeManager.Library:Notify("Please select a theme first.")
+            ThemeManager.Library:Notify("请先选择一个主题。")
             return
         end
 
         ThemeManager:SaveDefault(Name)
-        ThemeManager.Library:Notify(string.format("Successfully set default theme to %q", Name))
+        ThemeManager.Library:Notify(string.format("已将默认主题设为 %q", Name))
         RefreshDefaultThemeLabel()
     end)
 
-    Themesbox:AddButton("Reset default", function()
+    Themesbox:AddButton("重置默认", function()
         ShowDialog(
             function(): boolean
                 return true
             end,
 
             "ThemeManager_ResetDefault",
-            "Reset default theme",
-            "Are you sure you want to clear the default theme? The library will revert to its built-in default on next load.",
+            "重置默认主题",
+            "确定要清除默认主题吗？下次加载时库将回到内置默认主题。",
             
-            "Reset",
+            "重置",
             function()
                 local Success, ErrorMessage = ThemeManager:DeleteDefaultTheme()
                 if not Success then
-                    ThemeManager.Library:Notify(string.format("Failed to reset default theme: %s", ErrorMessage))
+                    ThemeManager.Library:Notify(string.format("重置默认主题失败：%s", ErrorMessage))
                     return
                 end
 
-                ThemeManager.Library:Notify("Successfully reset default theme.")
+                ThemeManager.Library:Notify("已重置默认主题。")
                 RefreshDefaultThemeLabel()
             end
         )
     end)
 
-    DefaultThemeLabel = Themesbox:AddLabel("Current default theme: ...", true);
+    DefaultThemeLabel = Themesbox:AddLabel("当前默认主题：未设置", true);
 
     Themesbox:AddDivider()
 
     
     Themesbox:AddInput("ThemeManager_ThemeJSON", {
-        Text = "Theme JSON"
+        Text = "主题 JSON"
     })
 
-    Themesbox:AddButton("Import theme", function()
+    Themesbox:AddButton("导入主题", function()
         local ThemeJSON = ThemeJSONInput.Value
         if IsStringEmpty(ThemeJSON) then
-            ThemeManager.Library:Notify("Theme JSON cannot be empty")
+            ThemeManager.Library:Notify("主题 JSON 不能为空")
             return
         end
 
@@ -18105,23 +18207,23 @@ function ThemeManager:CreateThemeManager(Themesbox: any)
             end,
 
             "ThemeManager_ImportTheme",
-            "Import theme",
-            "Are you sure you want to import this theme? Your current colors will be overwritten.",
+            "导入主题",
+            "确定要导入该主题吗？当前配色将被覆盖。",
 
-            "Import",
+            "导入",
             function()
                 local Success, ErrorMessage = ThemeManager:LoadJSON(ThemeJSON)
                 if not Success then
-                    ThemeManager.Library:Notify(string.format("Failed to import theme: %s", ErrorMessage))
+                    ThemeManager.Library:Notify(string.format("导入主题失败：%s", ErrorMessage))
                     return
                 end
 
-                ThemeManager.Library:Notify("Successfully imported theme")
+                ThemeManager.Library:Notify("主题导入成功")
             end
         )
     end)
 
-    Themesbox:AddButton("Export current theme", function()
+    Themesbox:AddButton("导出当前主题", function()
         local EncodedData, Success, ErrorMessage = ThemeManager:SaveJSON()
         if not Success then
             ThemeManager.Library:Notify(ErrorMessage)
@@ -18131,7 +18233,7 @@ function ThemeManager:CreateThemeManager(Themesbox: any)
         ThemeJSONInput:SetValue(EncodedData)
         if setclipboard then
             setclipboard(EncodedData)
-            ThemeManager.Library:Notify("Copied theme to your clipboard")
+            ThemeManager.Library:Notify("已复制主题到剪贴板")
         end
     end)
 
@@ -18173,7 +18275,7 @@ end
 function ThemeManager:CreateGroupBox(Tab: any, IconName: string)
     return Tab:AddGroupbox({
         Side = "Left",
-        Name = "Themes",
+        Name = "主题",
         IconName = IconName or "paintbrush",
     })
 end
@@ -18601,14 +18703,14 @@ function SaveManager:CheckSubFolder(CreateFolder: boolean)
 end
 
 function SaveManager:SetFolder(Folder: string)
-    assert(IsValidFolderPath(Folder), "Invalid path provided")
+    assert(IsValidFolderPath(Folder), "路径无效")
 
     SaveManager.Folder = Folder
     SaveManager:BuildFolderTree()
 end
 
 function SaveManager:SetSubFolder(SubFolder: string)
-    assert(IsValidFolderPath(SubFolder), "Invalid path provided")
+    assert(IsValidFolderPath(SubFolder), "路径无效")
 
     SaveManager.SubFolder = SubFolder
     SaveManager:BuildFolderTree()
@@ -18624,7 +18726,7 @@ function SaveManager:RefreshConfigList()
     pcall(makefolder, SettingsPath)
     local SuccessList, Files = pcall(listfiles, SettingsPath)
     if not (SuccessList and typeof(Files) == "table") then
-        SaveManager.Library:Notify(string.format("Failed to load config list: %s", tostring(Files)))
+        SaveManager.Library:Notify(string.format("加载配置列表失败：%s", tostring(Files)))
         return {}
     end
 
@@ -18735,16 +18837,16 @@ end
 
 function SaveManager:Save(ConfigName: string): (boolean, string?)
     if IsStringEmpty(ConfigName) then
-        return false, "Invalid config name provided"
+        return false, "配置名称无效"
     end
 
     if string.lower(ConfigName) == "autoload" then
-        return false, "Invalid config name provided"
+        return false, "配置名称无效"
     end
 
     local ConfigPath = GetConfigPath(ConfigName)
     if ConfigPath == false then
-        return false, "Invalid config name provided"
+        return false, "配置名称无效"
     end
 
     SaveManager:CheckFolderTree()
@@ -18756,7 +18858,7 @@ function SaveManager:Save(ConfigName: string): (boolean, string?)
 
     local SuccessWrite, ErrorMessage = pcall(writefile, ConfigPath, EncodedData)
     if not SuccessWrite then
-        return false, "Failed to write config file: " .. tostring(ErrorMessage)
+        return false, "写入配置文件失败：" .. tostring(ErrorMessage)
     end
 
     return true
@@ -18764,12 +18866,12 @@ end
 
 function SaveManager:LoadJSON(Content: string)
     if IsStringEmpty(Content) then
-        return false, "No JSON provided"
+        return false, "未提供 JSON"
     end
 
     local SuccessDecode, Decoded = pcall(HttpService.JSONDecode, HttpService, Content)
     if not SuccessDecode or typeof(Decoded) ~= "table" or typeof(Decoded.objects) ~= "table" then
-        return false, "Failed to decode config data"
+        return false, "配置数据解析失败"
     end
 
     local Library = SaveManager.Library
@@ -18838,17 +18940,17 @@ end
 
 function SaveManager:Load(ConfigName: string): (boolean, string?)
     if IsStringEmpty(ConfigName) then
-        return false, "No config is selected"
+        return false, "未选择配置"
     end
 
     local ConfigPath = GetConfigPath(ConfigName)
     if ConfigPath == false or not isfile(ConfigPath) then
-        return false, "Config file does not exist"
+        return false, "配置文件不存在"
     end
 
     local SuccessRead, Content = pcall(readfile, ConfigPath)
     if not SuccessRead then
-        return false, "Failed to read config file"
+        return false, "读取配置文件失败"
     end
 
     return SaveManager:LoadJSON(Content)
@@ -18856,17 +18958,17 @@ end
 
 function SaveManager:Delete(ConfigName: string): (boolean | string?)
     if IsStringEmpty(ConfigName) then
-        return false, "No config is selected"
+        return false, "未选择配置"
     end
 
     local ConfigPath = GetConfigPath(ConfigName)
     if ConfigPath == false or not isfile(ConfigPath) then
-        return false, "Config file does not exist"
+        return false, "配置文件不存在"
     end
 
     local SuccessDelete, ErrorMessage = pcall(delfile, ConfigPath)
     if not SuccessDelete then
-        return false, "Failed to delete config file: " .. tostring(ErrorMessage)
+        return false, "删除配置文件失败：" .. tostring(ErrorMessage)
     end
 
     if ConfigName == SaveManager.AutoloadConfig then
@@ -18882,11 +18984,11 @@ function SaveManager:GetAutoloadConfig(): (string, boolean, string?)
 
     local AutoloadPath = GetAutoloadPath()
     if AutoloadPath == false then
-        return "none", false, "Invalid path provided"
+        return "none", false, "路径无效"
     end
 
     if not isfile(AutoloadPath) then
-        return "none", false, "Autoload config is not set"
+        return "none", false, "未设置自动加载配置"
     end
 
     local SuccessRead, AutoloadConfigName = pcall(readfile, AutoloadPath)
@@ -18896,7 +18998,7 @@ function SaveManager:GetAutoloadConfig(): (string, boolean, string?)
 
     local ConfigExists = DoesConfigExist(AutoloadConfigName)
     if not ConfigExists then
-        return "none", false, "Config file not found"
+        return "none", false, "配置文件未找到"
     end
 
     SaveManager.AutoloadConfig = AutoloadConfigName
@@ -18905,18 +19007,18 @@ end
 
 function SaveManager:SaveAutoloadConfig(ConfigName: string): (boolean, string?)
     if IsStringEmpty(ConfigName) then
-        return false, "No config is selected"
+        return false, "未选择配置"
     end
 
     SaveManager:CheckFolderTree()
 
     local AutoloadPath = GetAutoloadPath()
     if AutoloadPath == false then
-        return false, "Invalid path provided"
+        return false, "路径无效"
     end
 
     if not DoesConfigExist(ConfigName) then
-        return false, "Config does not exist"
+        return false, "配置不存在"
     end
 
     local SuccessWrite, ErrorMessage = pcall(writefile, AutoloadPath, ConfigName)
@@ -18931,8 +19033,8 @@ end
 function SaveManager:LoadAutoloadConfig()
     local ConfigName, Success, FetchErrorMessage = SaveManager:GetAutoloadConfig()
     if not Success or FetchErrorMessage then
-        if FetchErrorMessage ~= "Autoload config is not set" then
-            SaveManager.Library:Notify(string.format("Failed to load autoload config: %s", FetchErrorMessage))
+        if FetchErrorMessage ~= "未设置自动加载配置" then
+            SaveManager.Library:Notify(string.format("加载自动加载配置失败：%s", FetchErrorMessage))
         end
 
         return
@@ -18940,11 +19042,11 @@ function SaveManager:LoadAutoloadConfig()
 
     local SuccessLoad, LoadErrorMessage = SaveManager:Load(ConfigName)
     if not SuccessLoad then
-        SaveManager.Library:Notify(string.format("Failed to load autoload config: %s", LoadErrorMessage))
+        SaveManager.Library:Notify(string.format("加载自动加载配置失败：%s", LoadErrorMessage))
         return
     end
 
-    SaveManager.Library:Notify(string.format("Successfully loaded autoload config %q", ConfigName))
+    SaveManager.Library:Notify(string.format("自动加载配置 %q 加载成功", ConfigName))
 end
 
 function SaveManager:DeleteAutoLoadConfig(): (boolean, string?)
@@ -18952,11 +19054,11 @@ function SaveManager:DeleteAutoLoadConfig(): (boolean, string?)
 
     local AutoloadPath = GetAutoloadPath()
     if AutoloadPath == false then
-        return false, "Invalid path provided"
+        return false, "路径无效"
     end
 
     if not isfile(AutoloadPath) then
-        return false, "Autoload config is not set"
+        return false, "未设置自动加载配置"
     end
 
     local SuccessDelete, ErrorMessage = pcall(delfile, AutoloadPath)
@@ -18990,7 +19092,7 @@ local function ShowDialog(
 
         FooterButtons = {
             Cancel = {
-                Title = "Cancel",
+                Title = "取消",
                 Variant = "Ghost",
                 Order = 1,
                 Callback = function(Dialog)
@@ -19012,10 +19114,10 @@ local function ShowDialog(
 end
 
 function SaveManager:BuildConfigSection(Tab: any, IconName: string)
-    assert(SaveManager.Library, "Library is not set, call SaveManager:SetLibrary(Library) first.")
+    assert(SaveManager.Library, "库未设置，请先调用 SaveManager:SetLibrary(Library)。")
     local ConfigurationBox = Tab:AddGroupbox({
         Side = "Right",
-        Name = "Configuration",
+        Name = "配置",
         IconName = IconName or "folder-cog",
     })
 
@@ -19028,24 +19130,24 @@ function SaveManager:BuildConfigSection(Tab: any, IconName: string)
     local function RefreshAutoloadConfigLabel()
         local AutoloadConfigName, _Success, _ErrorMessage = SaveManager:GetAutoloadConfig()
 
-        AutoloadConfigLabel:SetText(string.format("Current autoload config: %s", AutoloadConfigName))
+        AutoloadConfigLabel:SetText(string.format("当前自动加载配置：%s", AutoloadConfigName))
         if ConfigList then RefreshList() end
     end
 
     
     ConfigurationBox:AddInput("SaveManager_ConfigName", {
-        Text = "Config name"
+        Text = "配置名称"
     })
 
-    ConfigurationBox:AddButton("Create config", function()
+    ConfigurationBox:AddButton("创建配置", function()
         local ConfigName = ConfigNameInput.Value
         if IsStringEmpty(ConfigName) then
-            SaveManager.Library:Notify("Configuration name cannot be empty.")
+            SaveManager.Library:Notify("配置名称不能为空。")
             return
         end
 
         if string.lower(ConfigName) == "autoload" then
-            SaveManager.Library:Notify("Invalid config name provided.")
+            SaveManager.Library:Notify("配置名称无效。")
             return
         end
         
@@ -19055,18 +19157,18 @@ function SaveManager:BuildConfigSection(Tab: any, IconName: string)
             end,
 
             "SaveManager_CreateConfig",
-            "Config already exists",
-            string.format("A config named %q already exists. Overwriting will replace it with your current settings.", ConfigName),
+            "配置已存在",
+            string.format("已存在名为 %q 的配置，覆盖后会用当前设置替换它。", ConfigName),
 
-            "Overwrite",
+            "覆盖",
             function()
                 local Success, ErrorMessage = SaveManager:Save(ConfigName)
                 if not Success then
-                    SaveManager.Library:Notify(string.format("Failed to create config %q: %s", ConfigName, ErrorMessage))
+                    SaveManager.Library:Notify(string.format("创建配置 %q 失败：%s", ConfigName, ErrorMessage))
                     return
                 end
 
-                SaveManager.Library:Notify(string.format("Successfully created config %q", ConfigName))
+                SaveManager.Library:Notify(string.format("配置 %q 创建成功", ConfigName))
                 RefreshList()
             end
         )
@@ -19076,7 +19178,7 @@ function SaveManager:BuildConfigSection(Tab: any, IconName: string)
 
     
     ConfigurationBox:AddDropdown("SaveManager_ConfigList", {
-        Text = "Config list",
+        Text = "配置列表",
 
         Values = SaveManager:RefreshConfigList(),
         AllowNull = true,
@@ -19084,14 +19186,14 @@ function SaveManager:BuildConfigSection(Tab: any, IconName: string)
 
         FormatDisplayValue = function(Value: any)
             if Value == SaveManager.AutoloadConfig then
-                return string.format("%s (autoload)", Value)
+                return string.format("%s（自动加载）", Value)
             end
 
             return Value
         end,
         FormatListValue = function(Value: any)
             if Value == SaveManager.AutoloadConfig then
-                return string.format("%s (autoload)", Value)
+                return string.format("%s（自动加载）", Value)
             end
 
             return Value
@@ -19099,13 +19201,13 @@ function SaveManager:BuildConfigSection(Tab: any, IconName: string)
     })
 
     ConfigurationBox:AddButton({
-        Text = "Load config",
+        Text = "加载配置",
         DoubleClick = false,
 
         Func = function()
             local ConfigName = ConfigList.Value
             if IsStringEmpty(ConfigName) then
-                SaveManager.Library:Notify("Please select a config first.")
+                SaveManager.Library:Notify("请先选择一个配置。")
                 return
             end
 
@@ -19115,31 +19217,31 @@ function SaveManager:BuildConfigSection(Tab: any, IconName: string)
                 end,
 
                 "SaveManager_LoadConfig",
-                "Load config",
-                string.format("Are you sure you want to load %q? Your current settings will be overwritten.", ConfigName),
+                "加载配置",
+                string.format("确定要加载 %q 吗？当前设置将被覆盖。", ConfigName),
 
-                "Load",
+                "加载",
                 function()
                     local Success, ErrorMessage = SaveManager:Load(ConfigName)
                     if not Success then
-                        SaveManager.Library:Notify(string.format("Failed to load config %q: %s", ConfigName, ErrorMessage))
+                        SaveManager.Library:Notify(string.format("加载配置 %q 失败：%s", ConfigName, ErrorMessage))
                         return
                     end
 
-                    SaveManager.Library:Notify(string.format("Successfully loaded config %q", ConfigName))
+                    SaveManager.Library:Notify(string.format("配置 %q 加载成功", ConfigName))
                 end
             )
         end
     })
     
     ConfigurationBox:AddButton({
-        Text = "Overwrite config",
+        Text = "覆盖配置",
         DoubleClick = false,
 
         Func = function()
             local ConfigName = ConfigList.Value
             if IsStringEmpty(ConfigName) then
-                SaveManager.Library:Notify("Please select a config first.")
+                SaveManager.Library:Notify("请先选择一个配置。")
                 return
             end
 
@@ -19149,31 +19251,31 @@ function SaveManager:BuildConfigSection(Tab: any, IconName: string)
                 end,
 
                 "SaveManager_OverwriteConfig",
-                "Overwrite config",
-                string.format("Are you sure you want to overwrite %q with your current settings? This cannot be undone.", ConfigName),
+                "覆盖配置",
+                string.format("确定要用当前设置覆盖 %q 吗？此操作不可撤销。", ConfigName),
 
-                "Overwrite",
+                "覆盖",
                 function()
                     local Success, ErrorMessage = SaveManager:Save(ConfigName)
                     if not Success then
-                        SaveManager.Library:Notify(string.format("Failed to overwrite config %q: %s", ConfigName, ErrorMessage))
+                        SaveManager.Library:Notify(string.format("覆盖配置 %q 失败：%s", ConfigName, ErrorMessage))
                         return
                     end
 
-                    SaveManager.Library:Notify(string.format("Successfully overwrote config %q", ConfigName))
+                    SaveManager.Library:Notify(string.format("配置 %q 覆盖成功", ConfigName))
                 end
             )
         end
     })
 
     ConfigurationBox:AddButton({
-        Text = "Delete config",
+        Text = "删除配置",
         DoubleClick = false,
 
         Func = function()
             local ConfigName = ConfigList.Value
             if IsStringEmpty(ConfigName) then
-                SaveManager.Library:Notify("Please select a config first.")
+                SaveManager.Library:Notify("请先选择一个配置。")
                 return
             end
 
@@ -19183,51 +19285,51 @@ function SaveManager:BuildConfigSection(Tab: any, IconName: string)
                 end,
 
                 "SaveManager_DeleteConfig",
-                "Delete config",
-                string.format("Are you sure you want to delete %q? This cannot be undone.", ConfigName),
+                "删除配置",
+                string.format("确定要删除 %q 吗？此操作不可撤销。", ConfigName),
                 
-                "Delete",
+                "删除",
                 function()
                     local Success, ErrorMessage = SaveManager:Delete(ConfigName)
                     if not Success then
-                        SaveManager.Library:Notify(string.format("Failed to delete config %q: %s", ConfigName, ErrorMessage))
+                        SaveManager.Library:Notify(string.format("删除配置 %q 失败：%s", ConfigName, ErrorMessage))
                         return
                     end
 
-                    SaveManager.Library:Notify(string.format("Successfully deleted config %q", ConfigName))
+                    SaveManager.Library:Notify(string.format("配置 %q 已删除", ConfigName))
                     RefreshAutoloadConfigLabel()
                 end
             )
         end
     })
 
-    ConfigurationBox:AddButton("Refresh list", RefreshList)
+    ConfigurationBox:AddButton("刷新列表", RefreshList)
 
     
     ConfigurationBox:AddButton({
-        Text = "Set as autoload",
+        Text = "设为自动加载",
         DoubleClick = false,
 
         Func = function()
             local ConfigName = ConfigList.Value
             if IsStringEmpty(ConfigName) then
-                SaveManager.Library:Notify("Please select a config first.")
+                SaveManager.Library:Notify("请先选择一个配置。")
                 return
             end
 
             local Success, ErrorMessage = SaveManager:SaveAutoloadConfig(ConfigName)
             if not Success then
-                SaveManager.Library:Notify(string.format("Failed to set autoload config %q: %s", ConfigName, ErrorMessage))
+                SaveManager.Library:Notify(string.format("设置自动加载配置 %q 失败：%s", ConfigName, ErrorMessage))
                 return
             end
 
-            SaveManager.Library:Notify(string.format("Successfully set autoload config to %q", ConfigName))
+            SaveManager.Library:Notify(string.format("已将 %q 设为自动加载配置", ConfigName))
             RefreshAutoloadConfigLabel()
         end
     })
 
     ConfigurationBox:AddButton({
-        Text = "Reset autoload",
+        Text = "重置自动加载",
         DoubleClick = false,
 
         Func = function()
@@ -19237,37 +19339,37 @@ function SaveManager:BuildConfigSection(Tab: any, IconName: string)
                 end,
 
                 "SaveManager_ResetAutoload",
-                "Reset autoload config",
-                "Are you sure you want to clear the autoload config? No config will be loaded automatically on next launch.",
+                "重置自动加载配置",
+                "确定要清除自动加载配置吗？下次启动将不再自动加载任何配置。",
                 
-                "Reset",
+                "重置",
                 function()
                     local Success, ErrorMessage = SaveManager:DeleteAutoLoadConfig()
                     if not Success then
-                        SaveManager.Library:Notify(string.format("Failed to reset autoload config: %s", ErrorMessage))
+                        SaveManager.Library:Notify(string.format("重置自动加载配置失败：%s", ErrorMessage))
                         return
                     end
 
-                    SaveManager.Library:Notify("Successfully reset autoload config.")
+                    SaveManager.Library:Notify("已重置自动加载配置。")
                     RefreshAutoloadConfigLabel()
                 end
             )
         end
     })
 
-    AutoloadConfigLabel = ConfigurationBox:AddLabel("Current autoload config: ...", true);
+    AutoloadConfigLabel = ConfigurationBox:AddLabel("当前自动加载配置：未设置", true);
 
     ConfigurationBox:AddDivider()
 
     
     ConfigurationBox:AddInput("SaveManager_JSON", {
-        Text = "Config JSON"
+        Text = "配置 JSON"
     })
 
-    ConfigurationBox:AddButton("Import config", function()
+    ConfigurationBox:AddButton("导入配置", function()
         local ConfigJSON = ConfigJSONInput.Value
         if IsStringEmpty(ConfigJSON) then
-            SaveManager.Library:Notify("Configuration JSON cannot be empty")
+            SaveManager.Library:Notify("配置 JSON 不能为空")
             return
         end
 
@@ -19277,23 +19379,23 @@ function SaveManager:BuildConfigSection(Tab: any, IconName: string)
             end,
 
             "SaveManager_ImportConfig",
-            "Import config",
-            "Are you sure you want to import this configuration? Your current settings will be overwritten.",
+            "导入配置",
+            "确定要导入该配置吗？当前设置将被覆盖。",
 
-            "Import",
+            "导入",
             function()
                 local Success, ErrorMessage = SaveManager:LoadJSON(ConfigJSON)
                 if not Success then
-                    SaveManager.Library:Notify(string.format("Failed to import config: %s", ErrorMessage))
+                    SaveManager.Library:Notify(string.format("导入配置失败：%s", ErrorMessage))
                     return
                 end
 
-                SaveManager.Library:Notify("Successfully imported config")
+                SaveManager.Library:Notify("配置导入成功")
             end
         )
     end)
 
-    ConfigurationBox:AddButton("Export current config", function()
+    ConfigurationBox:AddButton("导出当前配置", function()
         local EncodedData, Success, ErrorMessage = SaveManager:SaveJSON()
         if not Success  then
             SaveManager.Library:Notify(ErrorMessage)
@@ -19303,7 +19405,7 @@ function SaveManager:BuildConfigSection(Tab: any, IconName: string)
         ConfigJSONInput:SetValue(EncodedData)
         if setclipboard then
             setclipboard(EncodedData)
-            SaveManager.Library:Notify("Copied config to your clipboard")
+            SaveManager.Library:Notify("已复制配置到剪贴板")
         end
     end)
 
@@ -19376,326 +19478,12 @@ end
 
 guardPrimaryPartCFrame()
 
-local REV_I18N
-do
-	local CN = {
-
-		["Themes"] = "主题",
-		["Font Face"] = "字体",
-		["Background Image"] = "背景图片",
-		["Theme list"] = "主题列表",
-		["Custom theme name"] = "自定义主题名称",
-		["Custom themes"] = "自定义主题",
-		["Create theme"] = "创建主题",
-		["Load theme"] = "加载主题",
-		["Overwrite theme"] = "覆盖主题",
-		["Delete theme"] = "删除主题",
-		["Set as default"] = "设为默认",
-		["Reset default"] = "重置默认",
-		["Refresh list"] = "刷新列表",
-		["Theme JSON"] = "主题 JSON",
-		["Import theme"] = "导入主题",
-		["Export current theme"] = "导出当前主题",
-
-		["Configuration"] = "配置",
-		["Config name"] = "配置名称",
-		["Config list"] = "配置列表",
-		["Create config"] = "创建配置",
-		["Load config"] = "加载配置",
-		["Overwrite config"] = "覆盖配置",
-		["Delete config"] = "删除配置",
-		["Set as autoload"] = "设为自动加载",
-		["Reset autoload"] = "重置自动加载",
-		["Config JSON"] = "配置 JSON",
-		["Import config"] = "导入配置",
-		["Export current config"] = "导出当前配置",
-
-		["Cancel"] = "取消",
-		["Overwrite"] = "覆盖",
-		["Delete"] = "删除",
-		["Import"] = "导入",
-		["Load"] = "加载",
-		["Save Anyway"] = "仍然保存",
-		["Low contrast theme"] = "低对比度主题",
-		["Reset default theme"] = "重置默认主题",
-		["Reset autoload config"] = "重置自动加载配置",
-		["Contrast check: n/a"] = "对比度检查：不适用",
-		["Theme already exists"] = "主题已存在",
-		["Theme name cannot be empty."] = "主题名称不能为空。",
-		["Invalid theme name provided."] = "主题名称无效。",
-		["Please select a theme first."] = "请先选择一个主题。",
-		["Theme JSON cannot be empty"] = "主题 JSON 不能为空",
-		["Successfully imported theme"] = "主题导入成功",
-		["Successfully reset default theme."] = "已重置默认主题。",
-		["Copied theme to your clipboard"] = "已复制主题到剪贴板",
-		["Configuration name cannot be empty."] = "配置名称不能为空。",
-		["Invalid config name provided."] = "配置名称无效。",
-		["Please select a config first."] = "请先选择一个配置。",
-		["Config already exists"] = "配置已存在",
-		["Configuration JSON cannot be empty"] = "配置 JSON 不能为空",
-		["Successfully imported config"] = "配置导入成功",
-		["Successfully reset autoload config."] = "已重置自动加载配置。",
-		["Copied config to your clipboard"] = "已复制配置到剪贴板",
-
-		["Search"] = "搜索",
-		["Search..."] = "搜索...",
-
-		["Background color"] = "背景颜色",
-		["Main color"] = "主色",
-		["Accent color"] = "强调色",
-		["Outline color"] = "描边颜色",
-		["font color"] = "字体颜色",
-		["Font color"] = "字体颜色",
-		["Contrast check: n/a"] = "对比度检查：不适用",
-
-		["Toggle"] = "切换",
-		["Lock"] = "锁定",
-		["Unlock"] = "解锁",
-		["Drag"] = "拖动",
-	}
-
-	local THEME_CN = {
-		["Default"] = "默认",
-		["Halloween!!"] = "万圣节",
-		["Revenant"] = "亡灵",
-		["Normal Obsidian"] = "经典黑曜石",
-		["Old Revenant."] = "旧版亡灵",
-		["Aurora"] = "极光",
-		["BBot"] = "蓝紫终端",
-		["Berry Smoothie"] = "莓果冰沙",
-		["Buttercup"] = "金凤花",
-		["Candy Cane"] = "拐杖糖",
-		["Candy Pop"] = "糖果汽水",
-		["Canyon Clay"] = "峡谷红陶",
-		["Catppuccin"] = "卡布奇诺",
-		["Celestial"] = "星空",
-		["Copper Canyon"] = "铜色峡谷",
-		["Crimson Tide"] = "赤色潮汐",
-		["Cyberpunk"] = "赛博朋克",
-		["Deep Space"] = "深空",
-		["Desert Storm"] = "沙漠风暴",
-		["Dracula"] = "德古拉",
-		["Dust Bowl"] = "沙尘盆地",
-		["Dusty Rose"] = "灰调玫瑰",
-		["Electric Lime"] = "电光青柠",
-		["Emerald Dream"] = "翡翠梦境",
-		["Fatality"] = "终结",
-		["Flame Ember"] = "余烬烈焰",
-		["Forest Mist"] = "森林薄雾",
-		["Glacial"] = "冰川",
-		["Goldenrod"] = "金菊黄",
-		["Graphite"] = "石墨",
-		["Gruvbox"] = "灰调复古",
-		["Iceberg"] = "冰山",
-		["Inferno"] = "炼狱",
-		["Jade Forest"] = "玉林",
-		["Jester"] = "小丑",
-		["Lavender Mist"] = "薰衣草雾",
-		["Lunar Eclipse"] = "月蚀",
-		["Marshmallow"] = "棉花糖",
-		["Material"] = "材质派",
-		["Midnight Blue"] = "午夜蓝",
-		["Midnight Orchid"] = "午夜兰花",
-		["Mint"] = "薄荷",
-		["Mint Chocolate"] = "薄荷巧克力",
-		["Mocha Mist"] = "摩卡雾",
-		["Monokai"] = "莫诺凯",
-		["Mystic Violet"] = "神秘紫罗兰",
-		["Neon Jungle"] = "霓虹丛林",
-		["Nord"] = "北欧极夜",
-		["Ocean Breeze"] = "海风",
-		["Ocean Pearl"] = "海洋珍珠",
-		["Oceanic Next"] = "深海蓝调",
-		["One Dark"] = "暗夜一号",
-		["Opal Glow"] = "蛋白石辉光",
-		["Peach Fuzz"] = "蜜桃绒",
-		["Peacock Feather"] = "孔雀羽",
-		["Peanut Butter"] = "花生酱",
-		["Quartz"] = "石英",
-		["Retro Wave"] = "复古浪潮",
-		["Rose Quartz"] = "玫瑰石英",
-		["Sandstone"] = "砂岩",
-		["Slate Grey"] = "板岩灰",
-		["Solar Flare"] = "太阳耀斑",
-		["Solarized"] = "日光色调",
-		["Steel Blue"] = "钢青",
-		["Stormy Night"] = "暴风夜",
-		["Sunrise Glow"] = "日出辉光",
-		["Sunset Horizon"] = "日落地平线",
-		["Tokyo Night"] = "东京之夜",
-		["Tropical Punch"] = "热带果酒",
-		["Twilight"] = "暮光",
-		["Ubuntu"] = "乌班图",
-		["Vintage Paper"] = "复古纸张",
-		["Vodka Lime"] = "伏特加青柠",
-	}
-	for _k, _v in pairs(THEME_CN) do CN[_k] = _v end
-
-	local THEME_KEYS = {}
-	for _k in pairs(THEME_CN) do THEME_KEYS[#THEME_KEYS + 1] = _k end
-	table.sort(THEME_KEYS, function(a, b)
-		if #a ~= #b then return #a > #b end
-		return a < b
-	end)
-
-	local function escPat(s)
-		return (string.gsub(s, "[%^%$%(%)%%%.%[%]%*%+%-%?]", "%%%1"))
-	end
-
-	local function replaceThemeNames(str)
-		local out = str
-		for i = 1, #THEME_KEYS do
-			local k = THEME_KEYS[i]
-			if string.find(out, k, 1, true) then
-				local ok, r = pcall(string.gsub, out, escPat(k), escPat(THEME_CN[k]))
-				if ok and type(r) == "string" then out = r end
-			end
-		end
-		return out
-	end
-	local PREFIX = {
-		{ "Current default theme: ", "当前默认主题：" },
-		{ "Current autoload config: ", "当前自动加载配置：" },
-	}
-	local PLAIN = {
-		["None"] = "无",
-		["none"] = "无",
-		["n/a"] = "不适用",
-	}
-
-	local PATTERN = {
-		{ "^Contrast check: good %((.*)%)$", "对比度检查：良好（%1）" },
-		{ "^Low contrast %((.-)%) between (.-)%.", "对比度偏低（%1）：%2。" },
-		{ "^Failed to load theme list: (.*)$", "加载主题列表失败：%1" },
-		{ "^Failed to apply default theme: (.*)$", "应用默认主题失败：%1" },
-		{ "^Successfully applied default theme (.-)$", "已应用默认主题 %1" },
-		{ "^Successfully set default theme to (.-)$", "已将默认主题设为 %1" },
-		{ "^Failed to save theme (.-): (.*)$", "保存主题 %1 失败：%2" },
-		{ "^Successfully loaded theme (.-)$", "主题 %1 加载成功" },
-		{ "^Successfully deleted theme (.-)$", "主题 %1 已删除" },
-		{ "^Failed to delete theme: (.*)$", "删除主题失败：%1" },
-		{ "^Failed to reset default theme: (.*)$", "重置默认主题失败：%1" },
-		{ "^Failed to import theme: (.*)$", "导入主题失败：%1" },
-		{ "^Failed to load config list: (.*)$", "加载配置列表失败：%1" },
-		{ "^Failed to load autoload config: (.*)$", "加载自动加载配置失败：%1" },
-		{ "^Successfully loaded autoload config (.-)$", "自动加载配置 %1 加载成功" },
-		{ "^Failed to create config (.-): (.*)$", "创建配置 %1 失败：%2" },
-		{ "^Successfully created config (.-)$", "配置 %1 创建成功" },
-		{ "^Failed to load config (.-): (.*)$", "加载配置 %1 失败：%2" },
-		{ "^Successfully loaded config (.-)$", "配置 %1 加载成功" },
-		{ "^Failed to overwrite config (.-): (.*)$", "覆盖配置 %1 失败：%2" },
-		{ "^Successfully overwrote config (.-)$", "配置 %1 覆盖成功" },
-		{ "^Failed to delete config (.-): (.*)$", "删除配置 %1 失败：%2" },
-		{ "^Successfully deleted config (.-)$", "配置 %1 已删除" },
-		{ "^Failed to set autoload config (.-): (.*)$", "设置自动加载配置失败：%2" },
-		{ "^Successfully set autoload config to (.-)$", "已将 %1 设为自动加载配置" },
-		{ "^Failed to reset autoload config: (.*)$", "重置自动加载配置失败：%1" },
-		{ "^Failed to import config: (.*)$", "导入配置失败：%1" },
-	}
-
-	local function translate(text)
-		if type(text) ~= "string" or text == "" then return text end
-		local hit = CN[text]
-		if hit then return hit end
-
-		local dm = string.match(text, "^(.-) %(default%)$")
-		if dm and dm ~= "" then return translate(dm) .. "（默认）" end
-
-		for i = 1, #PREFIX do
-			local p = PREFIX[i][1]
-			if #text >= #p and string.sub(text, 1, #p) == p then
-				local rest = string.sub(text, #p + 1)
-				return PREFIX[i][2] .. (PLAIN[rest] or CN[rest] or rest)
-			end
-		end
-
-		for i = 1, #PATTERN do
-			local pat = PATTERN[i][1]
-			if string.find(text, pat) then
-				local ok, res = pcall(string.gsub, text, pat, PATTERN[i][2])
-				if ok and type(res) == "string" and res ~= text then
-					return replaceThemeNames(res)
-				end
-			end
-		end
-
-		return PLAIN[text] or text
-	end
-
-	local M = { Enable = false, Started = false, Translate = translate }
-
-	local function trObject(obj)
-		if not obj then return end
-		pcall(function()
-			if obj:IsA("TextBox") then
-				local ph = obj.PlaceholderText
-				if type(ph) == "string" and ph ~= "" then
-					local n = translate(ph)
-					if n ~= ph then obj.PlaceholderText = n end
-				end
-			end
-			if obj:IsA("TextLabel") or obj:IsA("TextButton") or obj:IsA("TextBox") then
-				local t = obj.Text
-				if type(t) == "string" and t ~= "" then
-					local n = translate(t)
-					if n ~= t then obj.Text = n end
-				end
-			end
-		end)
-	end
-
-	local function scanAll()
-		if not M.Enable then return end
-		local gui = Library and Library.ScreenGui
-		if not gui then return end
-		local ok, list = pcall(function() return gui:GetDescendants() end)
-		if not ok or type(list) ~= "table" then return end
-		for _, obj in ipairs(list) do trObject(obj) end
-	end
-
-	function M:SetEnabled(on)
-		self.Enable = on == true
-		if not self.Enable then return end
-
-		if self.Started then
-			scanAll()
-			return
-		end
-		self.Started = true
-
-		task.spawn(function()
-			for _ = 1, 40 do
-				scanAll()
-				task.wait(0.25)
-			end
-			while M.Enable do
-				scanAll()
-				task.wait(1)
-			end
-		end)
-
-		task.spawn(function()
-			local gui = Library and Library.ScreenGui
-			while M.Enable and not gui do
-				task.wait(0.1)
-				gui = Library and Library.ScreenGui
-			end
-			if not gui then
-				return
-			end
-			pcall(function()
-				gui.DescendantAdded:Connect(function(obj)
-					if not M.Enable then return end
-					task.defer(trObject, obj)
-					task.delay(0.1, trObject, obj)
-				end)
-			end)
-			scanAll()
-		end)
-	end
-
-	REV_I18N = M
-end
+local REV_I18N = {
+	Enable = false,
+	Started = true,
+	Translate = function(s) return s end,
+	SetEnabled = function() end,
+}
 
 local function xjwTryCompile(name, source)
 	local ok, res = pcall(xjwCompile, name, source)
@@ -19707,19 +19495,13 @@ local ThemeManager = xjwTryCompile("ThemeManager", THEME_SOURCE)
 local SaveManager = xjwTryCompile("SaveManager", SAVE_SOURCE)
 
 function XJWUI:Translate(s)
-	if REV_I18N and REV_I18N.Enable and type(REV_I18N.Translate) == "function" then
-		return REV_I18N.Translate(s) or s
-	end
+	-- 源码已直改中文，翻译器不再介入
 	return s
 end
 
 function XJWUI:EnableChinese(enable)
-	if type(REV_I18N) ~= "table" then return false end
-	if type(REV_I18N.SetEnabled) == "function" then
-		REV_I18N:SetEnabled(enable ~= false)
-		return true
-	end
-	return false
+	-- 兼容旧接口：界面文案已全部内置中文，无需运行期翻译
+	return true
 end
 
 function XJWUI:InstallNotify(defaultTitle)
@@ -19953,7 +19735,7 @@ end
 
 function XJWUI:InstallBackgroundDropdown(tab, opts)
 	opts = opts or {}
-	local gb = tab and tab.Groupboxes and tab.Groupboxes["Themes"]
+	local gb = tab and tab.Groupboxes and tab.Groupboxes["主题"]
 	if not gb or type(gb.Elements) ~= "table" then return nil end
 
 	local native
@@ -19989,7 +19771,8 @@ function XJWUI:InstallBackgroundDropdown(tab, opts)
 			local img = type(data) == "table" and data.BackgroundImage
 			if type(img) == "string" and img ~= "" and not used[img] and type(name) == "string" then
 				used[img] = true
-				table.insert(presets, { "主题背景 · " .. name, img })
+				local shown = ThemeManager.GetDisplayName and ThemeManager:GetDisplayName(name) or name
+				table.insert(presets, { "主题背景 · " .. shown, img })
 			end
 		end
 	end
@@ -20075,36 +19858,19 @@ function XJWUI:BuildSettingsTab(tab, opts)
 	end
 
 	pcall(function()
-		local floatBox = tab:AddLeftGroupbox("悬浮窗", "settings")
-		floatBox:AddDropdown("XJWFloatStyle", {
-			Text = "开关方式",
-			Values = {"灵动岛", "悬浮窗", "黑曜石悬浮窗", "隐藏"},
-			Default = (self.BootHandle and self.BootHandle.styleKey) or self:GetFloatStyle(),
-			AllowNull = false,
-			Multi = false,
-			Tooltip = "灵动岛为顶部居中胶囊，悬浮窗为可拖动圆形浮标，黑曜石悬浮窗为不显示浮窗，隐藏则露出原生按钮",
-			Callback = function(value)
-				self:SetFloatStyle(value)
-			end,
-		})
-		floatBox:AddButton({
-			Text = "重新选择开关方式",
-			Func = function()
-				self:PickFloatStyle({ Default = self.FloatStyle or "island" })
-			end,
-		})
-		floatBox:AddDropdown("XJWColorScheme", {
-			Text = "配色",
+		local lookBox = tab:AddLeftGroupbox("外观", "settings")
+		lookBox:AddDropdown("XJWColorScheme", {
+			Text = "配色方案",
 			Values = {"橙曜", "默认紫"},
 			Default = "橙曜",
 			AllowNull = false,
 			Multi = false,
-			Tooltip = "橙曜为暖橙主题，默认紫为原 Revenant 紫",
+			Tooltip = "橙曜为暖橙主题，默认紫为原 Revenant 紫色",
 			Callback = function(value)
 				self:ApplyScheme(value == "橙曜" and "orange" or "default")
 			end,
 		})
-		floatBox:AddLabel("悬浮窗文字为 XJW，配色跟随主题")
+		lookBox:AddLabel("窗口配色与原生开关按钮颜色跟随主题")
 	end)
 	pcall(function()
 		local okAdd, box1 = pcall(function()
@@ -20125,7 +19891,7 @@ function XJWUI:BuildSettingsTab(tab, opts)
 			if not holder then
 				return
 			end
-			local themes = tab.Groupboxes and tab.Groupboxes["Themes"]
+			local themes = tab.Groupboxes and tab.Groupboxes["主题"]
 			local baseOrder = 0
 			if themes and themes.BoxHolder and type(themes.BoxHolder.LayoutOrder) == "number" then
 				baseOrder = themes.BoxHolder.LayoutOrder
@@ -20167,9 +19933,6 @@ function XJWUI:BuildSettingsTab(tab, opts)
 				doUnload()
 			end,
 		})
-	end)
-	pcall(function()
-		self:SetFloatStyle(self.FloatStyle or "island")
 	end)
 	task.defer(function() self:InstallBackgroundDropdown(tab, opts) end)
 	return tab
@@ -20312,469 +20075,6 @@ if type(Library.GetCustomIcon) == "function" and not Library.__XJWIconPatched th
 end
 
 
-XJWUI.FloatStyle = "island"
-XJWUI.FloatGui = nil
-XJWUI.FloatScreen = nil
-XJWUI.FloatUnloadHooked = false
-XJWUI.FloatConnections = {}
-XJWUI.FloatPositions = {}
-
-local XJW_GOLD = Color3.fromRGB(245, 197, 66)
-local XJW_GOLD_LIGHT = Color3.fromRGB(255, 233, 168)
-local XJW_GOLD_DEEP = Color3.fromRGB(168, 118, 10)
-local XJW_INK = Color3.fromRGB(24, 18, 7)
-local XJW_FLOAT_LABEL = {
-	island = "灵动岛",
-	bar = "悬浮窗",
-	orb = "悬浮窗",
-	obsidian = "黑曜石悬浮窗",
-	off = "隐藏",
-}
-local XJW_FLOAT_KEY = {
-	["灵动岛"] = "island",
-	["悬浮窗"] = "bar",
-	["黑曜石悬浮窗"] = "obsidian",
-	["黑曜石"] = "obsidian",
-	["隐藏"] = "off",
-	island = "island",
-	bar = "bar",
-	orb = "orb",
-	obsidian = "obsidian",
-	off = "off",
-	horizontal = "bar",
-	draggable = "orb",
-	none = "off",
-}
-
-local function XJWFloatReset()
-	if XJWUI.FloatGui then
-		pcall(function()
-			XJWUI.FloatGui:Destroy()
-		end)
-		XJWUI.FloatGui = nil
-	end
-	for _, connection in ipairs(XJWUI.FloatConnections) do
-		pcall(function()
-			connection:Disconnect()
-		end)
-	end
-	XJWUI.FloatConnections = {}
-end
-
-local function XJWFloatAccent()
-	local base = XJW_GOLD
-	pcall(function()
-		if type(Library.Scheme) == "table" and typeof(Library.Scheme.AccentColor) == "Color3" then
-			base = Library.Scheme.AccentColor
-		end
-	end)
-	return base, base:Lerp(Color3.new(1, 1, 1), 0.45), base:Lerp(Color3.new(0, 0, 0), 0.55)
-end
-
-local function XJWFloatGoldStroke(target, thickness, transparency, accent)
-	accent = accent or XJW_GOLD
-	local light = accent:Lerp(Color3.new(1, 1, 1), 0.45)
-	local deep = accent:Lerp(Color3.new(0, 0, 0), 0.55)
-	local stroke = Instance.new("UIStroke")
-	stroke.Color = accent
-	stroke.Thickness = thickness
-	stroke.Transparency = transparency
-	stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-	stroke.Parent = target
-	local gradient = Instance.new("UIGradient")
-	gradient.Color = ColorSequence.new({
-		ColorSequenceKeypoint.new(0, light),
-		ColorSequenceKeypoint.new(0.5, accent),
-		ColorSequenceKeypoint.new(1, deep),
-	})
-	gradient.Rotation = 20
-	gradient.Parent = stroke
-	return stroke
-end
-
-local function XJWFloatDraggable(frame, onClick)
-	local pressPosition, startOffset, dragging, moved
-	local function bind(signal, handler)
-		table.insert(XJWUI.FloatConnections, signal:Connect(handler))
-	end
-	bind(frame.InputBegan, function(input)
-		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-			dragging = true
-			moved = false
-			pressPosition = input.Position
-			startOffset = Vector2.new(frame.Position.X.Offset, frame.Position.Y.Offset)
-		end
-	end)
-	bind(UIS.InputChanged, function(input)
-		if not dragging or not pressPosition then
-			return
-		end
-		if input.UserInputType ~= Enum.UserInputType.MouseMovement and input.UserInputType ~= Enum.UserInputType.Touch then
-			return
-		end
-		local delta = input.Position - pressPosition
-		if delta.Magnitude > 6 then
-			moved = true
-		end
-		if moved then
-			frame.Position = UDim2.new(frame.Position.X.Scale, startOffset.X + delta.X, frame.Position.Y.Scale, startOffset.Y + delta.Y)
-		end
-	end)
-	bind(UIS.InputEnded, function(input)
-		if input.UserInputType ~= Enum.UserInputType.MouseButton1 and input.UserInputType ~= Enum.UserInputType.Touch then
-			return
-		end
-		if not dragging then
-			return
-		end
-		dragging = false
-		pressPosition = nil
-		if not moved and onClick then
-			pcall(onClick)
-		end
-	end)
-end
-
-local function XJWFloatContainer()
-	if XJWUI.FloatScreen and XJWUI.FloatScreen.Parent then
-		return XJWUI.FloatScreen
-	end
-	local parent = nil
-	pcall(function()
-		parent = LocalPlayer:WaitForChild("PlayerGui")
-	end)
-	if not parent then
-		pcall(function()
-			parent = game:GetService("CoreGui")
-		end)
-	end
-	if not parent then
-		return nil
-	end
-	local screen = Instance.new("ScreenGui")
-	screen.Name = "XJWFloatGui"
-	screen.ResetOnSpawn = false
-	screen.IgnoreGuiInset = true
-	screen.DisplayOrder = 999999
-	screen.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-	screen.Parent = parent
-	XJWUI.FloatScreen = screen
-	return screen
-end
-
-function XJWUI:InstallFloat(style)
-	style = XJW_FLOAT_KEY[style] or "island"
-	self.FloatStyle = style
-	XJWFloatReset()
-	local holder = XJWFloatContainer()
-	if not holder then
-		holder = Library.Floats
-	end
-	if not holder then
-		return false
-	end
-	if not self.FloatUnloadHooked and type(Library.OnUnload) == "function" then
-		self.FloatUnloadHooked = true
-		pcall(function()
-			Library:OnUnload(function()
-				XJWFloatReset()
-				if XJWUI.FloatScreen then
-					pcall(function()
-						XJWUI.FloatScreen:Destroy()
-					end)
-					XJWUI.FloatScreen = nil
-				end
-			end)
-		end)
-	end
-	local nativeHolder = Library.Floats or holder
-	local function toggleWindow()
-		pcall(function()
-			Library:Toggle()
-		end)
-	end
-	local function hideNativeButtons()
-		pcall(function()
-			for _, child in ipairs(nativeHolder:GetChildren()) do
-				if child:IsA("TextButton") and (child.Text == "Toggle" or child.Text == "Lock") then
-					child.Visible = false
-				end
-			end
-		end)
-	end
-	if style == "off" then
-		pcall(function()
-			for _, child in ipairs(nativeHolder:GetChildren()) do
-				if child:IsA("TextButton") and (child.Text == "Toggle" or child.Text == "Lock") then
-					child.Visible = true
-				end
-			end
-		end)
-		return true
-	end
-	hideNativeButtons()
-	local accent, accentLight, accentDeep = XJWFloatAccent()
-	local savedPosition = self.FloatPositions[style]
-	if style == "island" then
-		local island = Instance.new("Frame")
-		island.Name = "XJWFloatIsland"
-		island.AnchorPoint = Vector2.new(0.5, 0)
-		island.Position = savedPosition or UDim2.new(0.5, 0, 0, 10)
-		island.Size = UDim2.fromOffset(216, 44)
-		island.BackgroundColor3 = XJW_INK
-		island.BackgroundTransparency = 0.12
-		island.BorderSizePixel = 0
-		island.ZIndex = 61
-		island.Parent = holder
-		local islandCorner = Instance.new("UICorner")
-		islandCorner.CornerRadius = UDim.new(1, 0)
-		islandCorner.Parent = island
-		local islandStroke = XJWFloatGoldStroke(island, 1.5, 0.1, accent)
-		local sheen = Instance.new("UIGradient")
-		sheen.Color = ColorSequence.new({
-			ColorSequenceKeypoint.new(0, accent:Lerp(XJW_INK, 0.78)),
-			ColorSequenceKeypoint.new(0.5, XJW_INK),
-			ColorSequenceKeypoint.new(1, accent:Lerp(XJW_INK, 0.78)),
-		})
-		sheen.Parent = island
-		local dot = Instance.new("Frame")
-		dot.AnchorPoint = Vector2.new(0, 0.5)
-		dot.Position = UDim2.new(0, 16, 0.5, 0)
-		dot.Size = UDim2.fromOffset(9, 9)
-		dot.BackgroundColor3 = accentLight
-		dot.BorderSizePixel = 0
-		dot.ZIndex = 62
-		dot.Parent = island
-		local dotCorner = Instance.new("UICorner")
-		dotCorner.CornerRadius = UDim.new(1, 0)
-		dotCorner.Parent = dot
-		local brand = Instance.new("TextLabel")
-		brand.BackgroundTransparency = 1
-		brand.Position = UDim2.fromOffset(34, 0)
-		brand.Size = UDim2.fromOffset(58, 44)
-		brand.Font = Enum.Font.GothamBold
-		brand.Text = "XJW"
-		brand.TextSize = 17
-		brand.TextColor3 = accentLight
-		brand.TextXAlignment = Enum.TextXAlignment.Left
-		brand.ZIndex = 62
-		brand.Parent = island
-		local brandStroke = Instance.new("UIStroke")
-		brandStroke.Color = accentDeep
-		brandStroke.Thickness = 1
-		brandStroke.Transparency = 0.35
-		brandStroke.Parent = brand
-		local divider = Instance.new("Frame")
-		divider.BackgroundColor3 = accent
-		divider.BackgroundTransparency = 0.55
-		divider.BorderSizePixel = 0
-		divider.Position = UDim2.fromOffset(94, 13)
-		divider.Size = UDim2.new(0, 1, 0, 18)
-		divider.ZIndex = 62
-		divider.Parent = island
-		local hint = Instance.new("TextLabel")
-		hint.BackgroundTransparency = 1
-		hint.Position = UDim2.fromOffset(104, 0)
-		hint.Size = UDim2.new(1, -132, 1, 0)
-		hint.Font = Enum.Font.GothamMedium
-		hint.Text = "展开面板"
-		hint.TextSize = 13
-		hint.TextColor3 = accent
-		hint.TextXAlignment = Enum.TextXAlignment.Left
-		hint.ZIndex = 62
-		hint.Parent = island
-		task.spawn(function()
-			while island.Parent do
-				local wave = (math.sin(os.clock() * 2.4) + 1) * 0.5
-				islandStroke.Transparency = 0.04 + wave * 0.26
-				dot.BackgroundTransparency = wave * 0.55
-				sheen.Offset = Vector2.new(math.sin(os.clock() * 0.8) * 0.12, 0)
-				task.wait(0.05)
-			end
-		end)
-		XJWFloatDraggable(island, function()
-			toggleWindow()
-			local opened = false
-			pcall(function()
-				opened = Library.Toggled == true
-			end)
-			hint.Text = opened and "收起面板" or "展开面板"
-		end)
-		self.FloatGui = island
-	elseif style == "obsidian" then
-		self.FloatGui = nil
-		return true
-	elseif style == "orb" then
-		local orb = Instance.new("Frame")
-		orb.Name = "XJWFloatOrb"
-		orb.AnchorPoint = Vector2.new(0.5, 0.5)
-		orb.Position = savedPosition or UDim2.new(0, 56, 0.5, 0)
-		orb.Size = UDim2.fromOffset(64, 64)
-		orb.BackgroundColor3 = XJW_INK
-		orb.BackgroundTransparency = 0.05
-		orb.BorderSizePixel = 0
-		orb.ZIndex = 61
-		orb.Parent = holder
-		local orbCorner = Instance.new("UICorner")
-		orbCorner.CornerRadius = UDim.new(1, 0)
-		orbCorner.Parent = orb
-		XJWFloatGoldStroke(orb, 2, 0.08, accent)
-		local glow = Instance.new("Frame")
-		glow.Name = "Glow"
-		glow.AnchorPoint = Vector2.new(0.5, 0.5)
-		glow.Position = UDim2.fromScale(0.5, 0.5)
-		glow.Size = UDim2.fromScale(1, 1)
-		glow.BackgroundTransparency = 1
-		glow.ZIndex = 60
-		glow.Parent = orb
-		local glowCorner = Instance.new("UICorner")
-		glowCorner.CornerRadius = UDim.new(1, 0)
-		glowCorner.Parent = glow
-		local glowStroke = XJWFloatGoldStroke(glow, 3, 0.45, accent)
-		local brand = Instance.new("TextLabel")
-		brand.BackgroundTransparency = 1
-		brand.Size = UDim2.fromScale(1, 1)
-		brand.Font = Enum.Font.GothamBold
-		brand.Text = "XJW"
-		brand.TextSize = 15
-		brand.TextColor3 = accentLight
-		brand.ZIndex = 62
-		brand.Parent = orb
-		local brandStroke = Instance.new("UIStroke")
-		brandStroke.Color = accentDeep
-		brandStroke.Thickness = 1
-		brandStroke.Transparency = 0.35
-		brandStroke.Parent = brand
-		task.spawn(function()
-			while orb.Parent do
-				local wave = (math.sin(os.clock() * 2.6) + 1) * 0.5
-				glowStroke.Transparency = 0.35 + wave * 0.4
-				glow.Size = UDim2.fromScale(1 + wave * 0.14, 1 + wave * 0.14)
-				task.wait(0.05)
-			end
-		end)
-		XJWFloatDraggable(orb, toggleWindow)
-		self.FloatGui = orb
-	else
-		local bar = Instance.new("Frame")
-		bar.Name = "XJWFloatBar"
-		bar.AnchorPoint = Vector2.new(0, 0.5)
-		bar.Position = savedPosition or UDim2.new(0, 16, 0.5, 0)
-		bar.Size = UDim2.fromOffset(168, 46)
-		bar.BackgroundColor3 = XJW_INK
-		bar.BackgroundTransparency = 0.1
-		bar.BorderSizePixel = 0
-		bar.ZIndex = 61
-		bar.Parent = holder
-		local barCorner = Instance.new("UICorner")
-		barCorner.CornerRadius = UDim.new(1, 0)
-		barCorner.Parent = bar
-		local barStroke = XJWFloatGoldStroke(bar, 1.6, 0.1, accent)
-		local shade = Instance.new("UIGradient")
-		shade.Color = ColorSequence.new({
-			ColorSequenceKeypoint.new(0, Color3.fromRGB(46, 34, 12)),
-			ColorSequenceKeypoint.new(1, Color3.fromRGB(14, 10, 4)),
-		})
-		shade.Rotation = 90
-		shade.Parent = bar
-		local brand = Instance.new("TextLabel")
-		brand.BackgroundTransparency = 1
-		brand.Position = UDim2.fromOffset(18, 0)
-		brand.Size = UDim2.fromOffset(56, 46)
-		brand.Font = Enum.Font.GothamBold
-		brand.Text = "XJW"
-		brand.TextSize = 20
-		brand.TextColor3 = accentLight
-		brand.TextXAlignment = Enum.TextXAlignment.Left
-		brand.ZIndex = 62
-		brand.Parent = bar
-		local brandStroke = Instance.new("UIStroke")
-		brandStroke.Color = accentDeep
-		brandStroke.Thickness = 1
-		brandStroke.Transparency = 0.35
-		brandStroke.Parent = brand
-		local divider = Instance.new("Frame")
-		divider.BackgroundColor3 = accent
-		divider.BackgroundTransparency = 0.55
-		divider.BorderSizePixel = 0
-		divider.Position = UDim2.fromOffset(76, 13)
-		divider.Size = UDim2.new(0, 1, 0, 20)
-		divider.ZIndex = 62
-		divider.Parent = bar
-		local hint = Instance.new("TextLabel")
-		hint.BackgroundTransparency = 1
-		hint.Position = UDim2.fromOffset(86, 0)
-		hint.Size = UDim2.new(1, -110, 1, 0)
-		hint.Font = Enum.Font.GothamMedium
-		hint.Text = "展开面板"
-		hint.TextSize = 13
-		hint.TextColor3 = accent
-		hint.TextXAlignment = Enum.TextXAlignment.Left
-		hint.ZIndex = 62
-		hint.Parent = bar
-		local dot = Instance.new("Frame")
-		dot.AnchorPoint = Vector2.new(1, 0.5)
-		dot.Position = UDim2.new(1, -16, 0.5, 0)
-		dot.Size = UDim2.fromOffset(8, 8)
-		dot.BackgroundColor3 = accentLight
-		dot.BorderSizePixel = 0
-		dot.ZIndex = 62
-		dot.Parent = bar
-		local dotCorner = Instance.new("UICorner")
-		dotCorner.CornerRadius = UDim.new(1, 0)
-		dotCorner.Parent = dot
-		task.spawn(function()
-			while bar.Parent do
-				local wave = (math.sin(os.clock() * 3) + 1) * 0.5
-				barStroke.Transparency = 0.05 + wave * 0.3
-				dot.BackgroundTransparency = wave * 0.5
-				task.wait(0.05)
-			end
-		end)
-		XJWFloatDraggable(bar, function()
-			toggleWindow()
-			local opened = false
-			pcall(function()
-				opened = Library.Toggled == true
-			end)
-			hint.Text = opened and "收起面板" or "展开面板"
-		end)
-		self.FloatGui = bar
-	end
-	self.FloatPositions[style] = self.FloatGui.Position
-	table.insert(self.FloatConnections, UIS.InputEnded:Connect(function()
-		if self.FloatGui then
-			self.FloatPositions[style] = self.FloatGui.Position
-		end
-	end))
-	return true
-end
-
-function XJWUI:SetFloatStyle(style)
-	local key = XJW_FLOAT_KEY[style] or style
-	if key ~= "island" and key ~= "bar" and key ~= "orb" and key ~= "obsidian" and key ~= "off" then
-		key = "island"
-	end
-	if key == "orb" then
-		key = "bar"
-	end
-	if self.BootHiding and not self.BootForce then
-		self.FloatStyle = key
-		return XJW_FLOAT_LABEL[key] or "灵动岛"
-	end
-	self:InstallFloat(key)
-	return XJW_FLOAT_LABEL[key] or "灵动岛"
-end
-
-function XJWUI:GetFloatStyle()
-	return XJW_FLOAT_LABEL[self.FloatStyle or "island"] or "灵动岛"
-end
-
-task.defer(function()
-	pcall(function()
-		XJWUI:InstallFloat(XJWUI.FloatStyle or "island")
-	end)
-end)
 
 Library.__XJWCreateWindowRaw = Library.__XJWCreateWindowRaw or Library.CreateWindow
 
@@ -20801,7 +20101,6 @@ Library.SoftenOuterBorder = XJWUI.SoftenOuterBorder
 Library.InstallBackground = XJWUI.InstallBackground
 Library.InstallBackgroundDropdown = XJWUI.InstallBackgroundDropdown
 Library.BuildSettingsTab = XJWUI.BuildSettingsTab
-Library.InstallFloat = XJWUI.InstallFloat
 local XJW_SCHEMES = {
 	orange = {
 		BackgroundColor = Color3.fromRGB(16, 12, 8),
@@ -20836,167 +20135,7 @@ function XJWUI:ApplyScheme(name)
 			Library:UpdateColorsUsingRegistry()
 		end
 	end)
-	pcall(function()
-		if self.FloatStyle then
-			self:InstallFloat(self.FloatStyle)
-		end
-	end)
 	return key ~= nil and key or "orange"
-end
-
-function XJWUI:PickFloatStyle(opts)
-	opts = opts or {}
-	local parent = nil
-	pcall(function()
-		parent = LocalPlayer:WaitForChild("PlayerGui")
-	end)
-	if not parent then
-		pcall(function()
-			parent = game:GetService("CoreGui")
-		end)
-	end
-	if not parent then
-		return nil
-	end
-	local a = XJW_GOLD
-	pcall(function()
-		if type(Library.Scheme) == "table" then
-			a = Library.Scheme.AccentColor
-		end
-	end)
-	local light = a:Lerp(Color3.new(1, 1, 1), 0.42)
-	local screen = Instance.new("ScreenGui")
-	screen.Name = "XJWFloatPicker"
-	screen.ResetOnSpawn = false
-	screen.IgnoreGuiInset = true
-	screen.DisplayOrder = 2147483646
-	screen.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-	screen.Parent = parent
-	local backdrop = Instance.new("Frame")
-	backdrop.Name = "Backdrop"
-	backdrop.Size = UDim2.fromScale(1, 1)
-	backdrop.BackgroundColor3 = Color3.new(0, 0, 0)
-	backdrop.BackgroundTransparency = 0.42
-	backdrop.BorderSizePixel = 0
-	backdrop.Parent = screen
-	local panel = Instance.new("Frame")
-	panel.Name = "Panel"
-	panel.AnchorPoint = Vector2.new(0.5, 0.5)
-	panel.Position = UDim2.fromScale(0.5, 0.5)
-	panel.Size = UDim2.fromOffset(430, 300)
-	panel.BackgroundColor3 = XJW_INK
-	panel.BackgroundTransparency = 0.03
-	panel.BorderSizePixel = 0
-	panel.Parent = screen
-	local panelCorner = Instance.new("UICorner")
-	panelCorner.CornerRadius = UDim.new(0, 14)
-	panelCorner.Parent = panel
-	XJWFloatGoldStroke(panel, 1.5, 0.15, a)
-	local title = Instance.new("TextLabel")
-	title.BackgroundTransparency = 1
-	title.Position = UDim2.fromOffset(0, 20)
-	title.Size = UDim2.new(1, 0, 0, 26)
-	title.Font = Enum.Font.GothamBold
-	title.Text = "选择开关方式"
-	title.TextSize = 18
-	title.TextColor3 = light
-	title.Parent = panel
-	local sub = Instance.new("TextLabel")
-	sub.BackgroundTransparency = 1
-	sub.Position = UDim2.fromOffset(0, 48)
-	sub.Size = UDim2.new(1, 0, 0, 18)
-	sub.Font = Enum.Font.GothamMedium
-	sub.Text = "选择后立即生效，可在设置页随时更改"
-	sub.TextSize = 12
-	sub.TextColor3 = Color3.fromRGB(150, 140, 130)
-	sub.Parent = panel
-	local function dismiss()
-		pcall(function()
-			screen:Destroy()
-		end)
-	end
-	local items = {
-		{ Key = "island", Title = "灵动岛", Desc = "顶部居中胶囊" },
-		{ Key = "bar", Title = "悬浮窗", Desc = "可拖动圆形浮标" },
-		{ Key = "obsidian", Title = "黑曜石悬浮窗", Desc = "不显示浮窗" },
-	}
-	for index = 1, #items do
-		local item = items[index]
-		local card = Instance.new("TextButton")
-		card.Name = "Pick_" .. item.Key
-		card.AutoButtonColor = false
-		card.BackgroundColor3 = Color3.fromRGB(36, 26, 15)
-		card.BackgroundTransparency = 0.15
-		card.BorderSizePixel = 0
-		card.Text = ""
-		card.Position = UDim2.fromOffset(22 + (index - 1) * 131, 92)
-		card.Size = UDim2.fromOffset(120, 128)
-		card.Parent = panel
-		local cardCorner = Instance.new("UICorner")
-		cardCorner.CornerRadius = UDim.new(0, 10)
-		cardCorner.Parent = card
-		local cardStroke = Instance.new("UIStroke")
-		cardStroke.Color = a
-		cardStroke.Thickness = 1
-		cardStroke.Transparency = 0.7
-		cardStroke.Parent = card
-		local icon = Instance.new("Frame")
-		icon.AnchorPoint = Vector2.new(0.5, 0)
-		icon.Position = UDim2.new(0.5, 0, 0, 18)
-		icon.Size = UDim2.fromOffset(56, 26)
-		icon.BackgroundColor3 = Color3.fromRGB(20, 14, 8)
-		icon.BorderSizePixel = 0
-		icon.Parent = card
-		local iconCorner = Instance.new("UICorner")
-		iconCorner.CornerRadius = UDim.new(1, 0)
-		iconCorner.Parent = icon
-		XJWFloatGoldStroke(icon, 1.2, 0.35, a)
-		local iconDot = Instance.new("Frame")
-		iconDot.AnchorPoint = Vector2.new(0.5, 0.5)
-		iconDot.Position = UDim2.fromScale(0.5, 0.5)
-		iconDot.Size = UDim2.fromOffset(7, 7)
-		iconDot.BackgroundColor3 = light
-		iconDot.BorderSizePixel = 0
-		iconDot.Parent = icon
-		local iconDotCorner = Instance.new("UICorner")
-		iconDotCorner.CornerRadius = UDim.new(1, 0)
-		iconDotCorner.Parent = iconDot
-		local label = Instance.new("TextLabel")
-		label.BackgroundTransparency = 1
-		label.Position = UDim2.fromOffset(0, 56)
-		label.Size = UDim2.new(1, 0, 0, 22)
-		label.Font = Enum.Font.GothamBold
-		label.Text = item.Title
-		label.TextSize = 14
-		label.TextColor3 = light
-		label.Parent = card
-		local desc = Instance.new("TextLabel")
-		desc.BackgroundTransparency = 1
-		desc.Position = UDim2.fromOffset(8, 80)
-		desc.Size = UDim2.new(1, -16, 0, 32)
-		desc.Font = Enum.Font.GothamMedium
-		desc.Text = item.Desc
-		desc.TextSize = 11
-		desc.TextWrapped = true
-		desc.TextColor3 = Color3.fromRGB(150, 140, 130)
-		desc.Parent = card
-		card.MouseEnter:Connect(function()
-			cardStroke.Transparency = 0.15
-			card.BackgroundColor3 = Color3.fromRGB(48, 34, 18)
-		end)
-		card.MouseLeave:Connect(function()
-			cardStroke.Transparency = 0.7
-			card.BackgroundColor3 = Color3.fromRGB(36, 26, 15)
-		end)
-		card.MouseButton1Click:Connect(function()
-			self:SetFloatStyle(item.Key)
-			dismiss()
-			if type(opts.Callback) == "function" then
-				task.spawn(opts.Callback, item.Key)
-			end
-		end)
-	end
-	return screen
 end
 
 local function XJWBootSchemeColor(key, fallback)
@@ -21024,10 +20163,9 @@ function XJWUI:Boot(opts)
 		end)
 	end
 
-	local TweenService = game:GetService("TweenService")
 	local labels = opts.Options
 	if type(labels) ~= "table" or #labels == 0 then
-		labels = { "灵动岛", "悬浮窗", "黑曜石悬浮窗" }
+		labels = { "黑曜石悬浮窗" }
 	end
 	local boot = {
 		styleKey = nil,
@@ -21038,78 +20176,14 @@ function XJWUI:Boot(opts)
 	}
 	self.BootHandle = boot
 	self.BootHiding = true
+	boot.HideFloats = function() end
 
-	local playerGui = LocalPlayer:WaitForChild("PlayerGui")
-	local loading = nil
-	local progress = 0
 	local named = {}
 	local pickerGui = nil
 
-	local function accentColor()
-		return XJWBootSchemeColor("AccentColor", Color3.fromRGB(125, 85, 255))
-	end
-
-	local function lighten(c, amount)
-		if typeof(c) ~= "Color3" then
-			return c
-		end
-		return c:Lerp(Color3.new(1, 1, 1), amount)
-	end
-
-	local function idleColor()
-		return lighten(XJWBootSchemeColor("MainColor", Color3.fromRGB(25, 25, 25)), 0.06)
-	end
-
-	local function hideAllFloats()
-		pcall(function()
-			XJWUI.FloatStyle = "off"
-			if XJWUI.FloatGui then
-				pcall(function()
-					XJWUI.FloatGui:Destroy()
-				end)
-				XJWUI.FloatGui = nil
-			end
-			if XJWUI.FloatScreen then
-				pcall(function()
-					XJWUI.FloatScreen:Destroy()
-				end)
-				XJWUI.FloatScreen = nil
-			end
-		end)
-		pcall(function()
-			local holder = Library and Library.Floats
-			if not holder then
-				return
-			end
-			for _, item in ipairs(holder:GetDescendants()) do
-				if item:IsA("GuiObject") then
-					item.Visible = false
-				end
-			end
-		end)
-	end
-
-	boot.HideFloats = hideAllFloats
-	hideAllFloats()
-	task.spawn(function()
-		while not boot.finished do
-			hideAllFloats()
-			task.wait(0.12)
-		end
-	end)
-
-	local function setStage(step)
-		progress = step
-		if loading then
-			pcall(function()
-				loading:SetCurrentStep(step)
-			end)
-		end
-	end
-
 	local function paint()
-		local accent = accentColor()
-		local idle = idleColor()
+		local accent = XJWBootSchemeColor("AccentColor", Color3.fromRGB(125, 85, 255))
+		local idle = XJWBootSchemeColor("MainColor", Color3.fromRGB(25, 25, 25))
 		local font = XJWBootSchemeColor("FontColor", Color3.new(1, 1, 1))
 		local onAccent = XJWBootSchemeColor("DarkColor", Color3.new(0, 0, 0))
 		local bright = 0.299 * accent.R + 0.587 * accent.G + 0.114 * accent.B
@@ -21149,22 +20223,13 @@ function XJWUI:Boot(opts)
 		boot.finished = true
 		boot.awaiting = false
 		destroyPicker()
-		if loading then
-			pcall(function()
-				loading:Destroy()
-			end)
-			loading = nil
-		end
 		self.BootHiding = false
 		boot.styleKey = boot.styleKey or labels[1]
 		if type(boot.OnApply) == "function" then
 			pcall(boot.OnApply, boot.styleKey)
 		end
 		pcall(function()
-			self:SetFloatStyle(boot.styleKey)
-		end)
-		pcall(function()
-			self:Notify("加载完成，开关方式：" .. tostring(boot.styleKey))
+			self:Notify("加载完成")
 		end)
 		if type(opts.OnFinish) == "function" then
 			task.spawn(opts.OnFinish, boot.styleKey)
@@ -21200,182 +20265,9 @@ function XJWUI:Boot(opts)
 			return
 		end
 		boot.awaiting = true
-		setStage(math.max(progress, 90))
-		if loading then
-			pcall(function()
-				loading:SetMessage("请选择开关方式")
-				loading:SetDescription("Please select your toggle style")
-			end)
-		end
 	end
 
 	boot.Ready = ready
-
-	local okGui = pcall(function()
-		local gui = Instance.new("ScreenGui")
-		gui.Name = "XJWBootStylePicker"
-		gui.ResetOnSpawn = false
-		gui.IgnoreGuiInset = true
-		gui.DisplayOrder = 2147483646
-		gui.Parent = playerGui
-		pickerGui = gui
-	end)
-
-	if okGui and pickerGui then
-		local panelBg = XJWBootSchemeColor("BackgroundColor", XJW_INK)
-		local panelStroke = XJWBootSchemeColor("OutlineColor", Color3.fromRGB(40, 40, 40))
-		local panelFont = XJWBootSchemeColor("FontColor", Color3.new(1, 1, 1))
-		local panelAccent = accentColor()
-
-		local frame = Instance.new("Frame")
-		frame.Name = "BootPanel"
-		frame.AnchorPoint = Vector2.new(0.5, 1)
-		frame.Position = UDim2.new(0.5, 0, 1, -24)
-		frame.Size = UDim2.new(0, 436, 0, 88)
-		frame.BackgroundColor3 = panelBg
-		frame.BackgroundTransparency = 0.12
-		frame.BorderSizePixel = 0
-		frame.Parent = pickerGui
-
-		local corner = Instance.new("UICorner")
-		corner.CornerRadius = UDim.new(0, 10)
-		corner.Parent = frame
-
-		local stroke = Instance.new("UIStroke")
-		stroke.Color = panelStroke
-		stroke.Thickness = 1.5
-		stroke.Parent = frame
-
-		local title = Instance.new("TextLabel")
-		title.BackgroundTransparency = 1
-		title.Position = UDim2.new(0, 0, 0, 6)
-		title.Size = UDim2.new(1, 0, 0, 20)
-		title.Font = Enum.Font.GothamBold
-		title.Text = "选择开关方式 / Toggle Style"
-		title.TextColor3 = panelFont
-		title.TextSize = 14
-		title.Parent = frame
-
-		local titleGrad = Instance.new("UIGradient")
-		titleGrad.Color = ColorSequence.new(panelAccent, lighten(panelAccent, 0.55))
-		titleGrad.Parent = title
-
-		task.spawn(function()
-			local t0 = os.clock()
-			while title and title.Parent do
-				titleGrad.Rotation = (os.clock() - t0) * 60 % 360
-				RunService.RenderStepped:Wait()
-			end
-		end)
-
-		local xs = { 8, 152, 296 }
-		local btnIdle = idleColor()
-		local btnHover = lighten(XJWBootSchemeColor("MainColor", Color3.fromRGB(25, 25, 25)), 0.16)
-		local btnFont = panelFont
-		for i, label in ipairs(labels) do
-			local btn = Instance.new("TextButton")
-			btn.Name = "Boot_" .. tostring(i)
-			btn.Position = UDim2.new(0, xs[i] or (8 + (i - 1) * 144), 0, 36)
-			btn.Size = UDim2.new(0, 132, 0, 40)
-			btn.BackgroundColor3 = btnIdle
-			btn.TextColor3 = btnFont
-			btn.Font = Enum.Font.GothamBold
-			btn.Text = label
-			btn.TextSize = 14
-			btn.AutoButtonColor = false
-			btn.BorderSizePixel = 0
-			btn.Parent = frame
-
-			local btnCorner = Instance.new("UICorner")
-			btnCorner.CornerRadius = UDim.new(0, 8)
-			btnCorner.Parent = btn
-
-			local scale = Instance.new("UIScale")
-			scale.Parent = btn
-
-			named[label] = btn
-
-			btn.MouseEnter:Connect(function()
-				if boot.styleKey ~= label then
-					TweenService:Create(btn, TweenInfo.new(0.12), { BackgroundColor3 = btnHover }):Play()
-				end
-			end)
-
-			btn.MouseLeave:Connect(function()
-				if boot.styleKey ~= label then
-					TweenService:Create(btn, TweenInfo.new(0.12), { BackgroundColor3 = btnIdle }):Play()
-				end
-			end)
-
-			btn.MouseButton1Click:Connect(function()
-				TweenService:Create(scale, TweenInfo.new(0.08, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { Scale = 0.9 }):Play()
-				task.delay(0.09, function()
-					TweenService:Create(scale, TweenInfo.new(0.2, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = 1 }):Play()
-				end)
-				pick(label)
-			end)
-
-			pcall(function()
-				btn.TouchTap:Connect(function()
-					pick(label)
-				end)
-			end)
-		end
-
-		paint()
-	end
-
-	local loadOpts = {
-		Title = opts.Title or self.Defaults.Title,
-		CurrentStep = 0,
-		TotalSteps = 100,
-		ShowSidebar = false,
-		AlwaysOnTop = true,
-		WindowWidth = 460,
-		WindowHeight = 220,
-		ContentWidth = 460,
-	}
-	if type(opts.Loading) == "table" then
-		for k, v in pairs(opts.Loading) do
-			loadOpts[k] = v
-		end
-	end
-
-	if pcall(function()
-		loading = Library:CreateLoading(loadOpts)
-	end) and loading then
-		pcall(function()
-			loading:SetMessage(opts.Title or self.Defaults.Title)
-			loading:SetDescription("正在初始化...")
-			loading:SetCurrentStep(0)
-		end)
-		task.spawn(function()
-			local stages = {
-				{ 0, opts.Title or self.Defaults.Title, "正在启动..." },
-				{ 18, "初始化界面", "准备 UI 资源..." },
-				{ 38, "加载模块", "解析脚本模块..." },
-				{ 58, "构建功能", "注册自动化任务..." },
-				{ 78, "应用主题", "调整配色与字体..." },
-				{ 88, "收尾工作", "检查依赖..." },
-			}
-			local idx = 1
-			while loading and not boot.finished and progress < 90 do
-				if not boot.awaiting and idx <= #stages and progress >= stages[idx][1] then
-					local text = stages[idx][2]
-					local desc = stages[idx][3]
-					pcall(function()
-						loading:SetMessage(text)
-						loading:SetDescription(desc)
-					end)
-					idx = idx + 1
-				end
-				setStage(math.min(progress + math.random(2, 4), 90))
-				task.wait(0.05)
-			end
-		end)
-	else
-		loading = nil
-	end
 
 	return boot
 end
@@ -21384,7 +20276,7 @@ function XJWUI:_AttachTitleFlow(label, speed)
 	if not label or label:FindFirstChild("XJWTitleFlow") then
 		return nil
 	end
-	local accent = XJW_GOLD
+	local accent = Color3.fromRGB(245, 197, 66)
 	pcall(function()
 		if type(Library.Scheme) == "table" then
 			accent = Library.Scheme.AccentColor
@@ -21451,12 +20343,14 @@ function XJWUI:InstallTitleFlow(win, opts)
 	return nil
 end
 
-Library.SetFloatStyle = XJWUI.SetFloatStyle
-Library.GetFloatStyle = XJWUI.GetFloatStyle
-Library.PickFloatStyle = XJWUI.PickFloatStyle
 Library.ApplyScheme = XJWUI.ApplyScheme
 Library.InstallTitleFlow = XJWUI.InstallTitleFlow
-Library.FloatLabels = XJW_FLOAT_LABEL
+
+task.defer(function()
+	pcall(function()
+		XJWUI:EnableChinese(true)
+	end)
+end)
 
 Library.Boot = function(self, opts)
 	return XJWUI:Boot(opts)
