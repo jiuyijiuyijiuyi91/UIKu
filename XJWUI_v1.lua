@@ -1616,6 +1616,11 @@ type IconModule = {
 -- [图案版·内置] lucide 图案数据直接内联在库内：
 -- 图集使用 Roblox 官方 assetid（136111683851629 / 135883070486325），
 -- 全程零网络请求、零写盘，图标是真实矢量图案而非 Unicode 符号。
+-- [内联版] 图标改为库内自带 lucide 图案数据，零联网、零外部模块
+local function IsIconModule(Module): boolean
+    return typeof(Module) == "table" and typeof(Module.GetAsset) == "function"
+end
+
 local function BuildBuiltinIconModule(): IconModule
 local Lucide = {}
 
