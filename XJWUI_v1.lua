@@ -3818,7 +3818,9 @@ function Library:AddDraggableButton(...)
         local X, Y = Library:GetTextBounds(Text, Library.Scheme.Font, 16)
 
         Button.Text = Text
-        Button.Size = UDim2.fromOffset(X * 2, Y * 2)
+        Button.TextSize = 16
+        -- 浮标按钮固定为原生尺寸的长胶囊，不再随文字长短缩成小方块
+        Button.Size = UDim2.fromOffset(math.max(X * 2 + 24, 96), math.max(Y * 2, 38))
     end
 
     if not ExcludeDragging then
@@ -18139,14 +18141,150 @@ function ThemeManager:CreateThemeManager(Themesbox: any)
         Multi = false
     })
     
-    Themesbox:AddInput("BackgroundImage", { 
-        Text = "背景图片",
+    local XJW_BG_CDNS = {
+        "https://cdn.jsdelivr.net/gh/jiuyijiuyijiuyi91/XJW666@main/",
+        "https://gcore.jsdelivr.net/gh/jiuyijiuyijiuyi91/XJW666@main/",
+        "https://fastly.jsdelivr.net/gh/jiuyijiuyijiuyi91/XJW666@main/",
+        "https://testingcf.jsdelivr.net/gh/jiuyijiuyijiuyi91/XJW666@main/",
+        "https://raw.githubusercontent.com/jiuyijiuyijiuyi91/XJW666/refs/heads/main/",
+    }
+    local XJW_BG_PRESETS = {
+        { "默认立绘", "XJW%E8%84%9A%E6%9C%AC%E5%A3%81%E7%BA%B8.png" },
+        { "茉莉路", "%E8%8C%89%E8%8E%89%E8%B7%AF%E6%9C%AC%E4%BA%BA.jpg" },
+        { "群友分享", "%E7%BE%A4%E5%8F%8B%E5%88%86%E4%BA%AB.png" },
+        { "群友分享(2)", "%E7%BE%A4%E5%8F%8B%E5%88%86%E4%BA%AB%282%29.jpg" },
+    }
+    local XJW_BG_MAP, XJW_BG_NAMES = {}, {}
+    for _, XJWPreset in ipairs(XJW_BG_PRESETS) do
+        XJW_BG_MAP[XJWPreset[1]] = XJWPreset[2]
+        table.insert(XJW_BG_NAMES, XJWPreset[1])
+    end
+    XJW_BG_MAP["无背景（纯主题配色）"] = ""
+    table.insert(XJW_BG_NAMES, "无背景（纯主题配色）")
 
-        Default = "",
-        Finished = true,
-        ClearTextOnFocus = false,
-        ClearTextOnBlur = false
+    local XJWBgPreview = nil
+    if not ThemeManager._BgGuardStarted then
+        ThemeManager._BgGuardStarted = true
+        task.spawn(function()
+            while true do
+                task.wait(1)
+                local Picked = ThemeManager.PickedBackground
+                if type(Picked) == "string" and Picked ~= "" then
+                    local Lib2 = ThemeManager.Library
+                    if type(Lib2) == "table" and type(Lib2.Scheme) == "table" and Lib2.Scheme.BackgroundImage ~= Picked then
+                        pcall(function() XJWUI:ApplyBackgroundImage(Picked) end)
+                    end
+                end
+            end
+        end)
+    end
+    local function XJWEnsurePreview(Asset)
+        if XJWBgPreview then
+            return XJWBgPreview
+        end
+        local Initial = Asset
+        if type(Initial) ~= "string" or Initial == "" then
+            local Lib = ThemeManager.Library
+            local HasPlaceholder = false
+            if type(Lib) == "table" and type(Lib.GetIcon) == "function" then
+                local OkIcon, Icon = pcall(function()
+                    return Lib:GetIcon("image")
+                end)
+                HasPlaceholder = OkIcon and Icon ~= nil
+            end
+            if not HasPlaceholder then
+                return nil
+            end
+            Initial = "image"
+        end
+        local Ok, Obj = pcall(function()
+            return Themesbox:AddImage("XJWBgPreview", {
+                Image = Initial,
+                Height = 120,
+                ScaleType = Enum.ScaleType.Crop,
+                Visible = false,
+            })
+        end)
+        if Ok and Obj then
+            XJWBgPreview = Obj
+        end
+        return XJWBgPreview
+    end
+    local function XJWResolveBackground(File, OnDone)
+        if File == "" then
+            OnDone("")
+            return
+        end
+        local Lib = ThemeManager.Library
+        if type(Lib) ~= "table" or type(Lib.GetImageFromUrl) ~= "function" then
+            OnDone(nil)
+            return
+        end
+        task.spawn(function()
+            local Asset = nil
+            for _, Base in ipairs(XJW_BG_CDNS) do
+                local Ok, Res = pcall(function()
+                    return Lib:GetImageFromUrl(Base .. File)
+                end)
+                if Ok and type(Res) == "string" and Res ~= "" then
+                    Asset = Res
+                    break
+                end
+            end
+            OnDone(Asset)
+        end)
+    end
+    local function XJWApplyBackground(Value)
+        local File = XJW_BG_MAP[Value]
+        if type(File) ~= "string" then
+            return
+        end
+        XJWResolveBackground(File, function(Asset)
+            if Asset == "" then
+                ThemeManager.PickedBackground = ""
+                if XJWBgPreview then
+                    pcall(function() XJWBgPreview:SetVisible(false) end)
+                end
+                pcall(function() XJWUI:ApplyBackgroundImage("") end)
+                return
+            end
+            if type(Asset) ~= "string" then
+                return
+            end
+            local Preview = XJWEnsurePreview(Asset)
+            if Preview then
+                pcall(function() Preview:SetImage(Asset) end)
+                pcall(function() Preview:SetVisible(true) end)
+            end
+            ThemeManager.PickedBackground = Asset
+            pcall(function() XJWUI:ApplyBackgroundImage(Asset) end)
+        end)
+    end
+
+    ThemeManager.BackgroundDropdown = Themesbox:AddDropdown("BackgroundImagePick", {
+        Text = "背景图片",
+        Values = XJW_BG_NAMES,
+        Default = "默认立绘",
+        AllowNull = false,
+        Multi = false,
+        Tooltip = "选择窗口背景图，下方为实时预览",
+
+        Callback = function(Value)
+            XJWApplyBackground(Value)
+        end,
     })
+
+    task.defer(function()
+        local Current = ""
+        pcall(function()
+            if type(XJWUI) == "table" and type(XJWUI.GetBackgroundImage) == "function" then
+                Current = tostring(XJWUI:GetBackgroundImage() or "")
+            end
+        end)
+        if Current == "" then
+            XJWApplyBackground("默认立绘")
+        end
+    end)
 
     Themesbox:AddDivider()
 
@@ -18455,7 +18593,9 @@ function ThemeManager:CreateThemeManager(Themesbox: any)
     OutlineColor:OnChanged(UpdateTheme)
     FontColor:OnChanged(UpdateTheme)
     FontFace:OnChanged(function(Value) ThemeManager.Library:SetFont(Enum.Font[Value]) end)
-    BackgroundImage:OnChanged(function(Value) ThemeManager.Library:SetBackgroundImage(Value) end)
+    if BackgroundImage and type(BackgroundImage.OnChanged) == "function" then
+        BackgroundImage:OnChanged(function(Value) ThemeManager.Library:SetBackgroundImage(Value) end)
+    end
 
     
     ThemeManager:LoadDefault()
@@ -19932,6 +20072,18 @@ function XJWUI:InstallBackgroundDropdown(tab, opts)
 	local gb = tab and tab.Groupboxes and tab.Groupboxes["主题"]
 	if not gb or type(gb.Elements) ~= "table" then return nil end
 
+	-- 库内设置页已自带带图片预览的背景下拉，存在时不再叠加第二个
+	for _, el in ipairs(gb.Elements) do
+		local exists = false
+		pcall(function()
+			exists = el.Type == "Dropdown" and el.Text == "背景图片"
+		end)
+		if exists then
+			pcall(function() self:ApplyBackgroundImage() end)
+			return el
+		end
+	end
+
 	local native
 	for _, el in ipairs(gb.Elements) do
 		local isBox = false
@@ -19980,7 +20132,7 @@ function XJWUI:InstallBackgroundDropdown(tab, opts)
 	end
 
 	local picked = DefaultImage
-	local dd = gb:AddDropdown("BackgroundImagePick", {
+	local dd = gb:AddDropdown("BackgroundImagePick" .. tostring(math.floor(os.clock() * 1000)), {
 		Text = "背景图片",
 		Values = values,
 		Default = values[1],
@@ -20109,7 +20261,7 @@ function XJWUI:BuildSettingsTab(tab, opts)
 				end
 				if window and type(window.AddDialog) == "function" then
 					local okDialog = pcall(function()
-						window:AddDialog("XJWUnloadConfirm", {
+						window:AddDialog("XJWUnloadConfirm" .. tostring(math.floor(os.clock() * 1000)), {
 							Title = "卸载脚本",
 							Description = "确定要卸载脚本吗？所有已启用的功能将被关闭，脚本随即终止。",
 							AutoDismiss = true,
