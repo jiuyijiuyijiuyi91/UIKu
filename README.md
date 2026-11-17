@@ -2,97 +2,211 @@
 AIGC:
     Label: "1"
     ContentProducer: 001191440300708461136T1XGW3
-    ProduceID: 4dd97f6f7e89a386dd5d6289ccc2c985_951f8a7de01611f19919525400638852
-    ReservedCode1: OYVXjdly5ldCMWM4MddmyUO/cKl+n+6dECcF/IlMM7mZSJdVhU2eezc09E9l57D7WUAtI7ky22TduOT/E8OvbJu8wlqjJ8SvuZMgO7mD6rqM2PY/mx0UTAMi3Am34FdHFZy7WtgMhtJKDejZt6uiJE9kxuokyQlQxAy4ciHyP7rHEMcxSuycY5ohH/U=
+    ProduceID: 4dd97f6f7e89a386dd5d6289ccc2c985_be0e5696e27b11f19919525400638852
+    ReservedCode1: m6n1xZQbW9bwMizMAlm+mpC8musaQ5ZBE9WDzQ+vNVbUwKi+rcnyVIGGW4aU53+tbRA1WJIqvvXOGRIrqdSdKlUIW4Ete+PmikNnG5DC7+ptT3z88tGxtCOO09e+3k3AhoA3IdnOTQ4KUF/NUIU8k1I7a3m4jp/YOcmhS8T6x4CBVZaV0ioLTUeiLfI=
     ContentPropagator: 001191440300708461136T1XGW3
-    PropagateID: 4dd97f6f7e89a386dd5d6289ccc2c985_951f8a7de01611f19919525400638852
-    ReservedCode2: OYVXjdly5ldCMWM4MddmyUO/cKl+n+6dECcF/IlMM7mZSJdVhU2eezc09E9l57D7WUAtI7ky22TduOT/E8OvbJu8wlqjJ8SvuZMgO7mD6rqM2PY/mx0UTAMi3Am34FdHFZy7WtgMhtJKDejZt6uiJE9kxuokyQlQxAy4ciHyP7rHEMcxSuycY5ohH/U=
+    PropagateID: 4dd97f6f7e89a386dd5d6289ccc2c985_be0e5696e27b11f19919525400638852
+    ReservedCode2: m6n1xZQbW9bwMizMAlm+mpC8musaQ5ZBE9WDzQ+vNVbUwKi+rcnyVIGGW4aU53+tbRA1WJIqvvXOGRIrqdSdKlUIW4Ete+PmikNnG5DC7+ptT3z88tGxtCOO09e+3k3AhoA3IdnOTQ4KUF/NUIU8k1I7a3m4jp/YOcmhS8T6x4CBVZaV0ioLTUeiLfI=
 ---
 
+# XJWUI 使用说明（v1）
 
+> 对应库文件：`XJWUI_v1.lua`（821 KB / `Version = ""`）
+> 上传仓库时请重命名为 `XJWUI_v1.lua`，业务脚本的远程地址仍指向 `XJWUI_v1.lua`。
 
-# XJWUI v1 使用说明（启动流程 / 开关方式 / 设置页全量内置）
+---
 
-本轮改造目标：**加载动画、开关方式三选一、UI 设置页汉化与全部功能，全部由库本体提供**，业务脚本里不再保留任何一份实现。
+## 一、加载库
 
-仓库文件：`XJWUI_v1.lua`，内部 `Version = "v1"`。
-
-## 一、和以前最大的区别
-
-| 项目 | 旧版（脚本内实现） | v1 现在 |
-|---|---|---|
-| 加载动画 | 脚本里自己写 CreateLoading + 阶段文案 | `Library:Boot()` 一行调用，库内六阶段 |
-| 开关方式三选一 | 脚本里手搓 pickerGui / BOOT 状态机 | 同上，库内面板，配色跟随主题 |
-| 选择期隐藏浮窗 | 脚本自己 hideFloats + 打补丁 | 库内 `BootHiding` 开关，`SetFloatStyle` 自动让路 |
-| 设置页汉化 | 脚本内挂 REV_I18N 词典 | 库内 `EnableChinese(true)`，Boot 默认开启 |
-| 悬浮窗样式 / 配色 / 背景图 / 保存 / 主题 | 脚本逐个 AddDropdown 拼 | `Library:BuildSettingsTab(tab, {Window=...})` |
-| 卸载对话框 | 脚本自己 AddDialog | 设置页内建「卸载」分组，走 `Library:Unload()` |
-
-## 二、业务脚本现在只剩这么点
+脚本头部多源加载（本地优先，失败再走仓库）：
 
 ```lua
-local Library = loadXJWUI()  -- 本地/仓库多源加载，和以前一样
+local XJWUI_REPO = "https://raw.githubusercontent.com/jiuyijiuyijiuyi91/UIKu/main/"
+local XJWUI_CDN  = "https://cdn.jsdelivr.net/gh/jiuyijiuyijiuyi91/UIKu@main/"
+local XJWUI_NAME = "XJWUI_v1.lua"
 
-local boot = Library:Boot({ Title = "XJW中心", Chinese = true, Scheme = "orange" })
+local function loadXJWUI()
+    local lib
+    for _, path in ipairs({ "XJWUI_v1.lua", "UIKu/XJWUI_v1.lua" }) do
+        if lib then break end
+        local ok, res = pcall(function()
+            if isfile and isfile(path) then return loadstring(readfile(path))() end
+        end)
+        if ok and type(res) == "table" and type(res.CreateWindow) == "function" then lib = res end
+    end
+    for _, root in ipairs({ XJWUI_REPO, XJWUI_CDN }) do
+        if lib then break end
+        local ok, res = pcall(function() return loadstring(game:HttpGet(root .. XJWUI_NAME))() end)
+        if ok and type(res) == "table" and type(res.CreateWindow) == "function" then lib = res end
+    end
+    return lib
+end
 
-local Window = Library:CreateWindow({ Title = "XJW中心", Footer = "感谢支持", CornerRadius = 10 })
+local Library = loadXJWUI()
+```
+
+库执行完 `return Library`，同时把同一张表挂到 `getgenv().XJWUI`，两种取用方式都行。
+
+---
+
+## 二、最小接入骨架
+
+```lua
+local boot = Library:Boot({ Chinese = true, Scheme = "default" })
+
+local Window = Library:CreateWindow({
+    Title = "XJW中心",
+    Footer = "感谢支持",
+    CornerRadius = 10,
+})
+
 local Tabs = {
-    Main = Window:AddTab("示例功能", "sparkles"),
+    Main     = Window:AddTab("示例功能", "sparkles"),
     Settings = Window:AddTab("UI设置", "settings"),
 }
 
-Tabs.Main:AddLeftGroupbox("示例", "zap"):AddToggle("Demo", { Text = "示例开关", Default = false })
+-- 业务页
+Tabs.Main:AddLeftGroupbox("示例", "zap")
+    :AddToggle("Demo", { Text = "示例开关", Default = false })
 
+-- 设置页整页交给库（主题 / 配置 / 悬浮窗 / 卸载）
 Library:BuildSettingsTab(Tabs.Settings, { Window = Window, Folder = "Revenant" })
 
-task.defer(function() boot:Ready() end)  -- 业务页建完，放开选择面板
+-- 业务页建完后放开选择面板（不调用会一直停住）
+task.defer(function() boot:Ready() end)
 ```
 
-## 三、`Library:Boot(opts)` 参数
+---
 
-| 字段 | 类型 | 默认 | 说明 |
-|---|---|---|---|
-| `Title` | string | 库默认标题 | 加载窗与首阶段文案 |
-| `Options` | table | `{"灵动岛","悬浮窗","黑曜石悬浮窗"}` | 三选一按钮文案，顺序即按钮顺序 |
-| `Chinese` | bool | `true` | 是否自动打开全量汉化 |
-| `Scheme` | string | 不改 | 启动即套配色，`orange` / `default` |
-| `Loading` | table | — | 覆盖加载窗参数，如 `{WindowWidth=460, WindowHeight=220}` |
-| `OnFinish` | function | — | 选完后回调，入参为选中的样式名 |
+## 三、`Library:Boot(opts)`
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `Chinese` | bool | 默认 `true`，界面文案已是内置中文，该开关仅为兼容保留 |
+| `Scheme` | string | `"default"`（紫）/ `"orange"`（橙），启动即套配色 |
+| `Options` | table | 选择面板按钮文案列表，默认 `{ "黑曜石悬浮窗" }` |
+| `OnFinish` | function | 选择完成回调，入参为选中项文案 |
 
 返回 `boot` 句柄：
 
 | 成员 | 说明 |
-|---|---|
-| `boot:Ready()` | 界面就绪，放开选择面板（必须调用，否则一直停在 90%） |
-| `boot.Finish()` | 强制结束加载（不做选择时兜底） |
-| `boot.styleKey` | 当前选中的样式名 |
-| `boot.HideFloats()` | 手动隐藏全部浮窗 |
+| --- | --- |
+| `boot:Ready()` | 界面就绪，放开选择面板（**必须调用**） |
+| `boot:Picked()` / `boot.picked` | 是否已选 |
+| `boot:Pick(label)` | 程序化选中某个样式 |
+| `boot:Finish()` | 强制结束启动 |
+| `boot:HideFloats()` | 临时隐藏全部浮窗 |
+| `boot.styleKey` | 当前样式名 |
+| `boot.OnApply` | 可赋值函数，结束时回调 |
 
-## 四、`Library:BuildSettingsTab(tab, opts)` 内建内容
+---
 
-`opts`：`{ Window = <主窗口>, Folder = "Revenant", OnUnload = function, Chinese = bool }`
+## 四、`Library:CreateWindow(opts)`
 
-页面包含（全部已汉化）：
+| 字段 | 默认 | 说明 |
+| --- | --- | --- |
+| `Title` / `Footer` | 库默认 | 标题与页脚 |
+| `Icon` | 无 | 窗口图标（lucide 名 / 图片 URL / assetId） |
+| `CornerRadius` | `10` | 圆角 |
+| `MinSidebarWidth` | `168` | 侧边栏最小宽度 |
+| `SidebarWidth` | 库默认 | 侧边栏宽度 |
+| `TabTextOffset` / `TabTextSize` | 库默认 | 标签文字偏移与字号 |
+| `BackgroundImage` | 库默认壁纸 | 传 URL 换背景，传 `false` 关闭自动背景 |
+| `TitleFlow` | `true` | 标题流光动效，传 `false` 关闭 |
+| `Animations` | 见库 | 逐项开关 `TabSwitch` / `Groupbox` / `Dropdown` / `KeyPicker` |
 
-1. **主题管理**：字体、字体颜色、主题列表、自定义主题名、背景图片、主题 JSON 导入导出、设为默认/重置、对比度检查提示。
-2. **配置管理**：配置名、配置列表、创建/加载/覆盖/删除、设为自动加载、配置 JSON 导入导出。
-3. **悬浮窗**：开关方式下拉（灵动岛 / 悬浮窗 / 黑曜石悬浮窗 / 隐藏）、重新选择开关方式、配色下拉（橙曜 / 默认紫）。
-4. **卸载**：按钮 → 确认对话框（取消 / 卸载）→ 调 `Library:Unload()`。
+原生 `Library:CreateWindow(...)` 的参数仍全部可用，两个入口等价。
 
-## 五、接口清单
+---
+
+## 五、`Library:BuildSettingsTab(tab, opts)`
+
+| 字段 | 说明 |
+| --- | --- |
+| `Folder` | 配置与主题根目录，默认 `Revenant` |
+| `Window` | 主窗口对象，卸载确认框挂在它上面 |
+| `OnUnload` | 自定义卸载回调；不传则执行 `Library:Unload()` |
+
+页面内容：
+
+1. **主题**：字体、五项配色（字体/主色/强调/背景/描边）、主题列表（中文名）、自定义主题名、**背景图片下拉 + 预览**、主题 JSON 导入导出、设为默认。
+2. **配置**：配置名、配置列表、创建/加载/覆盖/删除、设为自动加载、配置 JSON 导入导出。
+3. **悬浮窗**：开关方式下拉（当前仅「黑曜石悬浮窗」）。
+4. **卸载**：「卸载脚本」按钮 → 确认框（取消 / 卸载）。
+
+---
+
+## 六、背景图片机制
+
+- 预设四项：**默认立绘 / 茉莉路 / 群友分享 / 群友分享(2)**，另有「无背景（纯主题配色）」。
+- 进设置页默认选中并立即生效「默认立绘」，不留空背景。
+- 图片经 5 条 CDN 依次尝试（jsdelivr ×4 域名 + raw.githubusercontent.com），全部失败回退 `XJWUI.Defaults.BackgroundImage`。
+- 选中后：设置页显示 120px 实时预览，并在 `Library.Scheme.BackgroundImage` 上挂 1 秒守护循环，主题切换后不会被回写覆盖。
+- 单独调用：
+
+```lua
+Library:ApplyBackgroundImage("https://.../xxx.png")  -- 应用
+Library:SetBackgroundImage("")                       -- 清空为纯主题配色
+Library:GetBackgroundImage()                         -- 取当前值
+Library:InstallBackgroundDropdown(tab)               -- 手动挂背景下拉（设置页已内置，通常不用）
+```
+
+---
+
+## 七、悬浮窗
+
+- 只有一种形态：**黑曜石原生浮标**，96 × 38 长胶囊，横排不重叠，可拖动，点击切换窗口显示。
+- 旧样式名（`灵动岛` / `悬浮窗` / `island` / `bar` / `orb`）全部映射到 `obsidian`，`隐藏` / `off` 为关闭。
+
+```lua
+Library:SetFloatStyle("obsidian")   -- 安装/切换
+Library:SetFloatStyle("off")        -- 隐藏
+Library:GetFloatStyle()             -- 取当前名
+Library:PickFloatStyle({ Callback = function(name) end })  -- 兼容旧写法，直接回落黑曜石
+```
+
+---
+
+## 八、其它常用接口
 
 | 接口 | 说明 |
-|---|---|
-| `Library:Boot(opts)` | 启动流程总入口（同 `Library.StartBoot`） |
-| `Library.GetBoot()` | 取当前 boot 句柄 |
-| `Library:Unload()` | 卸载：断开信号、触发 OnUnload、销毁 XJW* 全部 GUI |
-| `XJWUI.BootHiding` | 选择期隐藏浮窗开关，`SetFloatStyle` 期间只记状态不落地 |
-| `XJWUI.BootForce` | 置 true 可打破上面的让路逻辑，立即安装浮窗 |
+| --- | --- |
+| `Library:Notify(text, title)` | 通知，带音效与标题 |
+| `Library:ApplyScheme("default" \| "orange")` | 整体换配色 |
+| `Library:Unload()` | 卸载：清连接、销毁所有 `XJW*` ScreenGui，重复调用安全 |
+| `Library:Translate(s)` / `Library:EnableChinese(bool)` | 兼容旧代码，现为空实现（文案已直改中文） |
+| `Library:StyleSidebar(w, offset, size)` | 调整侧边栏尺寸与标签字号 |
+| `Library:SoftenOuterBorder()` | 柔化窗口外描边 |
+| `Library:InstallTitleFlow(win, { Title = ... })` | 手动挂标题流光 |
+| `Library.ThemeManager` / `Library.SaveManager` | 主题与配置管理器本体 |
 
-## 六、兼容性说明
+---
 
-- 旧写法 `Library:PickFloatStyle(...)`、`Library:SetFloatStyle(...)`、`Library:ApplyScheme(...)`、`Library:InstallTitleFlow(...)`、`Library:CreateLoading(...)` 全部保留，签名不变。
-- `BuildSettingsTab` 的开关方式下拉默认值会优先取 `boot.styleKey`，选完即同步。
-- `Library:Unload()` 会先执行库内原有清理逻辑，再补销毁 `XJW*` 前缀的 ScreenGui 与浮窗对象，重复调用安全。
-*（内容由AI生成，仅供参考）*
+## 九、组件速查
+
+```lua
+Window:AddTab(name, icon)                 -- 标签页
+Tab:AddLeftGroupbox(name, icon)           -- 左列分组（另有 AddRightGroupbox）
+Group:AddToggle(idx, { Text, Default })   -- 开关
+Group:AddSlider(idx, { Text, Min, Max, Default, Rounding })
+Group:AddDropdown(idx, { Text, Values, Default, Multi, AllowNull, Callback })
+Group:AddKeyPicker(idx, { Text, Default, Mode })
+Group:AddButton({ Text, Func })
+Group:AddInput(idx, { Text, Default })
+Group:AddColorPicker(idx, { Default })
+Group:AddLabel(text)                      -- 可链式接 AddColorPicker
+Group:AddDivider() / Group:AddImage(idx, {...})
+Window:AddDialog(idx, { Title, Description, AutoDismiss, FooterButtons = { ... } })
+Dropdown:SetValue(v) / Dropdown:SetValues(list) / Dropdown.Values
+```
+
+---
+
+## 十、踩坑提醒（本版已修，勿回退）
+
+1. **`Options.BackgroundImage` 不存在**：背景下拉的注册名是 `BackgroundImagePick`，`BackgroundImage` 只是主题数据里的字段名。旧写法在保存主题时会抛 `attempt to index nil with 'Value'`（v17 已修）。
+2. **不要给 `SetBackgroundImage` 传文字名**：传「默认立绘」这类显示名会被图标兜底逻辑画成问号。显示名只走下拉的 `SetValue`，由下拉解析 CDN。
+3. **不要叠加第二个背景下拉**：`InstallBackgroundDropdown` 检测到设置页已有「背景图片」下拉会直接返回，自己另建会重复。
+4. **卸载确认不要绕过**：走设置页按钮 → `XJWUnloadConfirm` 对话框（取消 / 卸载）；对话框创建失败时才退回「5 秒内再点一次」。
+5. **`Version` 留空**：交付文件里不写版本号，靠文件名区分；仓库固定 `XJWUI_v1.lua`。
 *（内容由AI生成，仅供参考）*
