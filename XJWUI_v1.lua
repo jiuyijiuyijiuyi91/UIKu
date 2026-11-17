@@ -1950,6 +1950,11 @@ function Library:GetCustomIcon(IconName: string): any
         return nil
     end
 
+    -- 空串/纯空白不允许落到 lucide 兜底问号上（否则无背景时窗口中间会出现一个问号图案）
+    if typeof(IconName) ~= "string" or IconName:match("^%s*$") then
+        return nil
+    end
+
     
     if typeof(IconName) == "string" and IconName:match("^https?://") then
         local Asset = Library:GetImageFromUrl(IconName)
@@ -3815,12 +3820,10 @@ function Library:AddDraggableButton(...)
     end)
 
     function DraggableButton:SetText(Text: string)
-        local X, Y = Library:GetTextBounds(Text, Library.Scheme.Font, 16)
-
         Button.Text = Text
         Button.TextSize = 16
-        -- 浮标按钮固定为原生尺寸的长胶囊，不再随文字长短缩成小方块
-        Button.Size = UDim2.fromOffset(math.max(X * 2 + 24, 96), math.max(Y * 2, 38))
+        -- 尺寸直接对齐自制脚本 SizeNativeButtons 里的原生浮标规格：96 x 38
+        Button.Size = UDim2.fromOffset(96, 38)
     end
 
     if not ExcludeDragging then
@@ -18182,24 +18185,13 @@ function ThemeManager:CreateThemeManager(Themesbox: any)
         if XJWBgPreview then
             return XJWBgPreview
         end
-        local Initial = Asset
-        if type(Initial) ~= "string" or Initial == "" then
-            local Lib = ThemeManager.Library
-            local HasPlaceholder = false
-            if type(Lib) == "table" and type(Lib.GetIcon) == "function" then
-                local OkIcon, Icon = pcall(function()
-                    return Lib:GetIcon("image")
-                end)
-                HasPlaceholder = OkIcon and Icon ~= nil
-            end
-            if not HasPlaceholder then
-                return nil
-            end
-            Initial = "image"
+        -- 没有真实图片就不建预览控件：绝不传占位图标，避免框内出现问号图案
+        if type(Asset) ~= "string" or Asset == "" then
+            return nil
         end
         local Ok, Obj = pcall(function()
             return Themesbox:AddImage("XJWBgPreview", {
-                Image = Initial,
+                Image = Asset,
                 Height = 120,
                 ScaleType = Enum.ScaleType.Crop,
                 Visible = false,
@@ -18249,7 +18241,15 @@ function ThemeManager:CreateThemeManager(Themesbox: any)
                 return
             end
             if type(Asset) ~= "string" then
-                return
+                -- CDN 全部失败时退回库内默认背景地址，保证「默认立绘」不会变成空背景
+                local Fallback = nil
+                if type(XJWUI) == "table" and type(XJWUI.Defaults) == "table" then
+                    Fallback = XJWUI.Defaults.BackgroundImage
+                end
+                if type(Fallback) ~= "string" or Fallback == "" then
+                    return
+                end
+                Asset = Fallback
             end
             local Preview = XJWEnsurePreview(Asset)
             if Preview then
@@ -18275,15 +18275,13 @@ function ThemeManager:CreateThemeManager(Themesbox: any)
     })
 
     task.defer(function()
-        local Current = ""
-        pcall(function()
-            if type(XJWUI) == "table" and type(XJWUI.GetBackgroundImage) == "function" then
-                Current = tostring(XJWUI:GetBackgroundImage() or "")
-            end
-        end)
-        if Current == "" then
-            XJWApplyBackground("默认立绘")
+        -- 默认项就是「默认立绘」：进设置页即选中并落地这张图，不留空背景
+        if ThemeManager.BackgroundDropdown and type(ThemeManager.BackgroundDropdown.SetValue) == "function" then
+            pcall(function()
+                ThemeManager.BackgroundDropdown:SetValue("默认立绘")
+            end)
         end
+        XJWApplyBackground("默认立绘")
     end)
 
     Themesbox:AddDivider()
@@ -20260,15 +20258,35 @@ function XJWUI:BuildSettingsTab(tab, opts)
 					end)
 				end
 				if window and type(window.AddDialog) == "function" then
+					-- 与自制脚本里的卸载确认完全一致：XJWUnloadConfirm / 不可点外部关闭 / 取消+卸载双按钮
 					local okDialog = pcall(function()
-						window:AddDialog("XJWUnloadConfirm" .. tostring(math.floor(os.clock() * 1000)), {
+						window:AddDialog("XJWUnloadConfirm", {
 							Title = "卸载脚本",
 							Description = "确定要卸载脚本吗？所有已启用的功能将被关闭，脚本随即终止。",
-							AutoDismiss = true,
-							OutsideClickDismiss = true,
+							AutoDismiss = false,
+							OutsideClickDismiss = false,
 							FooterButtons = {
-								Cancel = { Title = "取消", Variant = "Ghost", Order = 1, Callback = function() end },
-								Unload = { Title = "卸载", Variant = "Destructive", Order = 2, Callback = doUnload },
+								Cancel = {
+									Title = "取消",
+									Variant = "Ghost",
+									Order = 1,
+									Callback = function(Dialog)
+										if Dialog and type(Dialog.Dismiss) == "function" then
+											Dialog:Dismiss()
+										end
+									end,
+								},
+								Unload = {
+									Title = "卸载",
+									Variant = "Destructive",
+									Order = 2,
+									Callback = function(Dialog)
+										if Dialog and type(Dialog.Dismiss) == "function" then
+											Dialog:Dismiss()
+										end
+										doUnload()
+									end,
+								},
 							},
 						})
 					end)
@@ -20276,10 +20294,10 @@ function XJWUI:BuildSettingsTab(tab, opts)
 						return
 					end
 				end
-				if not self._UnloadConfirmAt or (os.clock() - self._UnloadConfirmAt) > 4 then
+				if not self._UnloadConfirmAt or (os.clock() - self._UnloadConfirmAt) > 5 then
 					self._UnloadConfirmAt = os.clock()
 					pcall(function()
-						self:Notify("再次点击「卸载脚本」确认卸载，4 秒内有效")
+						self:Notify("再次点击「卸载脚本」确认卸载，5 秒内有效")
 					end)
 					return
 				end
