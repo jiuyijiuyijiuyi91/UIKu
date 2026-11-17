@@ -17635,13 +17635,29 @@ end
 
 local function BuildCurrentThemeData(): {[string]: any}
     local Library = ThemeManager.Library
-    local ThemeData = {
-        FontFace = Library.Options.FontFace.Value,
-        BackgroundImage = Library.Options.BackgroundImage.Value
-    }
+    local Options = (Library and Library.Options) or {}
+    local ThemeData = {}
+
+    local FontFaceOption = Options.FontFace
+    if FontFaceOption and FontFaceOption.Value ~= nil then
+        ThemeData.FontFace = FontFaceOption.Value
+    end
+
+    -- 背景下拉注册名是 BackgroundImagePick，「BackgroundImage」只是主题数据里的字段名。
+    -- 旧写法直接索引 Options.BackgroundImage 得到 nil，再取 .Value 就抛 attempt to index nil with 'Value'
+    local BackgroundOption = Options.BackgroundImagePick or Options.BackgroundImage
+    if BackgroundOption and typeof(BackgroundOption.Value) == "string" then
+        ThemeData.BackgroundImage = BackgroundOption.Value
+    elseif typeof(ThemeManager.PickedBackground) == "string" and ThemeManager.PickedBackground ~= "" then
+        ThemeData.BackgroundImage = ThemeManager.PickedBackground
+    end
 
     for _, SchemeIndex in SchemeIndexes do
-        ThemeData[SchemeIndex] = Library.Options[SchemeIndex].Value:ToHex()
+        local Element = Options[SchemeIndex]
+        local Color = (Element and Element.Value) or Library.Scheme[SchemeIndex]
+        if typeof(Color) == "Color3" then
+            ThemeData[SchemeIndex] = Color:ToHex()
+        end
     end
 
     return ThemeData
@@ -17973,7 +17989,30 @@ function ThemeManager:ApplyThemeData(ThemeData: any): (boolean, string?)
 
         elseif Index == "BackgroundImage" then
             if typeof(Value) ~= "string" then continue end
+
+            -- 内置主题的背景字段是空串，表示不干预背景，不能当成「清空背景」
+            if Value == "" then continue end
+
+            -- 下拉显示名（如「默认立绘」）交给下拉自身解析 CDN 后应用，避免把显示名当图标名画成问号
+            local BackgroundOption = Library.Options.BackgroundImagePick
+            if BackgroundOption
+                and typeof(BackgroundOption.SetValue) == "function"
+                and typeof(BackgroundOption.Values) == "table"
+                and table.find(BackgroundOption.Values, Value) then
+                BackgroundOption:SetValue(Value)
+                continue
+            end
+
+            -- 既不是下拉项，又不是图片资源形态，直接跳过，绝不把文本名写进背景
+            local IsAssetLike = Value:match("^rbxasset") ~= nil
+                or Value:match("^rbxthumb") ~= nil
+                or Value:match("^http") ~= nil
+                or Value:match("^content://") ~= nil
+                or Value:match("^%d+$") ~= nil
+            if not IsAssetLike then continue end
+
             ThemeManager.Library:SetBackgroundImage(Value)
+            ThemeManager.PickedBackground = Value
 
         elseif table.find(SchemeIndexes, Index) then
             local SuccessColor, Color = pcall(Color3.fromHex, Value)
@@ -18096,7 +18135,7 @@ function ThemeManager:CreateThemeManager(Themesbox: any)
         table.insert(BuiltInThemesNames, Name)
     end
 
-    local CustomThemeList, CustomThemeName, ThemeList, FontFace, BackgroundImage, DefaultThemeLabel, ThemeJSONInput
+    local CustomThemeList, CustomThemeName, ThemeList, FontFace, DefaultThemeLabel, ThemeJSONInput
     local function RefreshList()
         CustomThemeList:SetValues(ThemeManager:ReloadCustomThemes())
         CustomThemeList:SetValue(nil)
@@ -18568,12 +18607,11 @@ function ThemeManager:CreateThemeManager(Themesbox: any)
     end)
 
     
-    CustomThemeList, CustomThemeName, ThemeList, FontFace, BackgroundImage, ThemeJSONInput =
+    CustomThemeList, CustomThemeName, ThemeList, FontFace, ThemeJSONInput =
         ThemeManager.Library.Options.ThemeManager_CustomThemeList,
         ThemeManager.Library.Options.ThemeManager_CustomThemeName,
         ThemeManager.Library.Options.ThemeManager_ThemeList,
         ThemeManager.Library.Options.FontFace,
-        ThemeManager.Library.Options.BackgroundImage,
         ThemeManager.Library.Options.ThemeManager_ThemeJSON;
 
     
@@ -18591,9 +18629,6 @@ function ThemeManager:CreateThemeManager(Themesbox: any)
     OutlineColor:OnChanged(UpdateTheme)
     FontColor:OnChanged(UpdateTheme)
     FontFace:OnChanged(function(Value) ThemeManager.Library:SetFont(Enum.Font[Value]) end)
-    if BackgroundImage and type(BackgroundImage.OnChanged) == "function" then
-        BackgroundImage:OnChanged(function(Value) ThemeManager.Library:SetBackgroundImage(Value) end)
-    end
 
     
     ThemeManager:LoadDefault()
@@ -18978,7 +19013,7 @@ end
 
 function SaveManager:IgnoreThemeSettings()
     SaveManager:SetIgnoreIndexes({
-        "BackgroundColor", "MainColor", "AccentColor", "OutlineColor", "FontColor", "FontFace", "BackgroundImage",
+        "BackgroundColor", "MainColor", "AccentColor", "OutlineColor", "FontColor", "FontFace", "BackgroundImage", "BackgroundImagePick",
         "ThemeManager_ThemeList", "ThemeManager_CustomThemeList", "ThemeManager_CustomThemeName", "ThemeManager_ThemeJSON"
     })
 end
